@@ -1,0 +1,325 @@
+
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Coffee‑Car Preiskalkulator · CI v4 (Bright)</title>
+<style>
+  :root{
+    /* CI: Helle Variante – Platzhalterwerte, leicht angepasst für Web-Kontrast.
+       Wenn du exakte HEX aus der PDF nennen willst, tausche sie hier 1:1 aus. */
+    --mint:#8BC4B5;
+    --mint-strong:#5DB6A1;
+    --ink:#1A1F2B;
+    --ink-soft:#3B4150;
+    --bg:#FAFBFC;
+    --card:#FFFFFF;
+    --line:#E6E8EB;
+    --muted:#6B7280;
+    --accent:#0F766E;
+    --radius:16px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0; font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; background:var(--bg); color:var(--ink)}
+  .wrap{max-width:1200px; margin:auto; padding:22px}
+  .hero{display:grid;grid-template-columns:1.15fr .85fr;gap:18px;align-items:stretch}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:18px; box-shadow:0 4px 18px rgba(0,0,0,.04)}
+  .title{display:flex; align-items:center; gap:10px}
+  .chip{display:inline-block; padding:6px 10px; border-radius:999px; background:linear-gradient(90deg,#fff, #f4fffb); border:1px solid var(--line); color:var(--accent); font-weight:700}
+  h1{margin:0 0 6px; font-size:clamp(22px,4vw,34px); color:var(--ink)}
+  h2{margin:0 0 10px; font-size:20px; color:var(--accent)}
+  label{display:block; font-weight:700; margin:10px 0 6px; color:var(--ink)}
+  input,select,button,textarea{width:100%; padding:12px; border-radius:12px; border:1px solid var(--line); background:#FFF; color:var(--ink)}
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--mint); outline-offset:1px}
+  textarea{min-height:96px}
+  .row{display:grid; gap:12px; grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+  .muted{color:var(--muted)}
+  .badge{display:inline-flex; align-items:center; gap:8px; padding:6px 10px; border-radius:999px; background:#F3F7F6; border:1px dashed var(--line); color:var(--accent)}
+  .btn{cursor:pointer; font-weight:900; background:linear-gradient(90deg,var(--mint),var(--mint-strong)); border:none; color:#083B35}
+  .btn-ghost{background:transparent; border:1px solid var(--line); color:var(--ink)}
+  .thumbs{display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px}
+  .thumbs img{width:100%; aspect-ratio:4/3; object-fit:cover; border-radius:14px; border:1px solid var(--line)}
+  .info{display:flex; gap:12px; align-items:flex-start; border-top:1px dashed var(--line); padding-top:12px; margin-top:12px}
+  .info img{width:88px; height:88px; object-fit:cover; border-radius:14px; border:1px solid var(--line); background:#FFF}
+  .footer-note{font-size:12px; color:var(--muted); margin-top:10px}
+  .divider{height:1px; background:linear-gradient(90deg,transparent,var(--mint),transparent); margin:16px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hero">
+    <div class="card">
+      <div class="title"><span class="chip">Chois Coffee</span><h1>Coffee‑Car Preiskalkulator</h1></div>
+      <p class="muted">Praxisnah. Transparent. Live aus deinem Kalkulations‑Sheet.</p>
+      <div class="divider"></div>
+      <div class="row">
+        <div><label>Datum (Start)</label><input id="date_start" type="date"></div>
+        <div><label>Datum (Ende)</label><input id="date_end" type="date"></div>
+        <div><label>Ausschankbeginn</label><input id="start_time" type="time" value="09:00"></div>
+        <div><label>Ausschankende</label><input id="end_time" type="time" value="13:00"></div>
+        <div><label>Gästezahl</label><input id="guests" type="number" min="1" value="90"></div>
+        <div>
+          <label>Kundentyp</label>
+          <select id="customer_type">
+            <option>Privat</option>
+            <option>Gewerblich</option>
+          </select>
+        </div>
+        <div>
+          <label>Art des Events</label>
+          <select id="event_type"></select>
+          <input id="event_type_other" placeholder="Bitte angeben…" style="display:none;margin-top:8px">
+        </div>
+        <div>
+          <label>Becher / Tassen</label>
+          <select id="cupType">
+            <option>Einwegbecher (100% kompostierbar)</option>
+            <option>Porzellantassen</option>
+            <option>Kunde stellt Tassen</option>
+            <option>Branding‑Becher</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="multiInfo" class="badge" style="display:none; margin-top:8px">
+        Mehrtägiges Event erkannt – bitte Start/Ende je Tag prüfen.
+      </div>
+
+      <div id="daysCard" class="card" style="margin-top:12px; display:none">
+        <h2>Ausschankzeiten je Tag</h2>
+        <div id="daysContainer"></div>
+        <div class="footer-note">Standard sind Beginn/Ende des ersten Tages; pro Tag frei anpassbar.</div>
+      </div>
+
+      <div class="card" style="margin-top:12px">
+        <h2>Zusatzoptionen (Ja/Nein)</h2>
+        <div class="row">
+          <label style="display:flex;align-items:center;gap:10px"><input id="waffles_on" type="checkbox"><span>Waffeln</span></label>
+          <label style="display:flex;align-items:center;gap:10px"><input id="frozencap_on" type="checkbox"><span>Frozen Cappuccino</span></label>
+          <label style="display:flex;align-items:center;gap:10px"><input id="softice_on" type="checkbox"><span>Softeis</span></label>
+          <label style="display:flex;align-items:center;gap:10px"><input id="milkschaum_on" type="checkbox"><span>Milchschaumdrucker</span></label>
+        </div>
+        <div class="info">
+          <img src="waffel.png" alt="Waffeln am Stiel">
+          <div><strong>Waffeln</strong><br>Frische Waffeln am Stiel mit Puderzucker und Schokosoße. ~80 Stück/Stunde.</div>
+        </div>
+        <div class="info">
+          <img src="mercedes.jpg" alt="Frozen Cappuccino">
+          <div><strong>Frozen Cappuccino</strong><br>Cremig‑gekühlt – ideal für Sommer‑Events.</div>
+        </div>
+        <div class="info">
+          <img src="bulli.jpg" alt="Softeis">
+          <div><strong>Softeis</strong><br>Vanille oder Schoko. Vanilleeis perfekt für <em>Affogato</em>.</div>
+        </div>
+        <div class="info">
+          <img src="milkschaum.jpg" alt="Milchschaumdrucker">
+          <div><strong>Milchschaumdrucker</strong><br>Tagespauschale inkl. Druckflatrate. Logos, Motive oder Texte direkt auf Milchschaum.</div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:12px">
+        <h2>Branding‑Optionen (nur für Gewerbekunden)</h2>
+        <div id="b2bBlock" class="row">
+          <label style="display:flex;align-items:center;gap:10px"><input id="branding_setup_on" type="checkbox"><span>Branding Setup <span class="muted">(Preis auf Anfrage)</span></span></label>
+          <label style="display:flex;align-items:center;gap:10px"><input id="branding_becher_on" type="checkbox"><span>Branding‑Becher <span class="muted">(Preis auf Anfrage)</span></span></label>
+        </div>
+        <div class="footer-note">Branding-Optionen werden protokolliert und individuell angeboten (keine automatische Preisberechnung).</div>
+      </div>
+
+      <div style="display:flex; gap:10px; margin-top:14px">
+        <button id="calc" class="btn">Preis berechnen</button>
+        <button class="btn-ghost" id="reset">Zurücksetzen</button>
+        <button class="btn-ghost" id="cta">Unverbindlich anfragen</button>
+      </div>
+      <div id="res" class="badge" style="margin-top:12px; background:#F0FFFA; border-color:#d9f5ea; color:#0C3F37">Noch kein Ergebnis.</div>
+      <div class="footer-note">Privatkunden sehen Brutto, Gewerbliche Netto. Add‑ons gelten als Tagespauschalen.</div>
+    </div>
+
+    <div class="card">
+      <h2>Bilder & Impressionen</h2>
+      <div class="thumbs">
+        <img src="fleet.jpg" alt="Coffee‑Car Flotte">
+        <img src="mercedes.jpg" alt="Mercedes Bar">
+        <img src="ape.jpg" alt="Ape Kaffee Setup">
+      </div>
+      <div class="divider"></div>
+      <h2>Porzellan‑Service</h2>
+      <div class="info">
+        <img src="ape.jpg" alt="Porzellan">
+        <div>Ausschank in <strong>Porzellantassen</strong> inkl. <strong>Unterteller</strong>, <strong>Löffel</strong> & <strong>Spülen</strong>.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ====== CONFIG ======
+const API = "https://script.google.com/macros/s/AKfycbzVZlwrVhJRISZHMmcbbE-Qy8CXGSPALcLogLpXHYCyWaKMsmxgdH6rm_uPWseVfGjC/exec";
+const EVENT_OPTIONS = {
+  'Privat': ['Hochzeit','Geburtstag','Sonstige'],
+  'Gewerblich': ['Messe','Kongress','Mitarbeiterfest','Promotion','Jubiläum','Eröffnungsfeier']
+};
+
+function enumerateDates(startStr, endStr){
+  const out=[]; if(!startStr) return out;
+  const start=new Date(startStr); const end=endStr?new Date(endStr):new Date(start);
+  let d=new Date(Date.UTC(start.getFullYear(),start.getMonth(),start.getDate()));
+  const endUTC=Date.UTC(end.getFullYear(),end.getMonth(),end.getDate());
+  while(d.getTime()<=endUTC){ out.push(new Date(d)); d.setUTCDate(d.getUTCDate()+1) }
+  return out;
+}
+function fmtISO(d){ const y=d.getUTCFullYear(), m=String(d.getUTCMonth()+1).padStart(2,'0'), da=String(d.getUTCDate()).padStart(2,'0'); return `${y}-${m}-${da}`; }
+
+function rebuildDayRows(){
+  const ds=document.getElementById('date_start').value;
+  const de=document.getElementById('date_end').value||ds;
+  const st=document.getElementById('start_time').value||'09:00';
+  const et=document.getElementById('end_time').value||'13:00';
+  const dates=enumerateDates(ds,de);
+  const card=document.getElementById('daysCard');
+  const info=document.getElementById('multiInfo');
+  const cont=document.getElementById('daysContainer'); cont.innerHTML='';
+  if(dates.length<=1){card.style.display='none'; info.style.display='none'; return;}
+  card.style.display=''; info.style.display='';
+  dates.forEach(d=>{
+    const div=document.createElement('div'); div.className='row';
+    const dateISO=fmtISO(d);
+    div.innerHTML=`<div><label class="muted">Datum</label><input type="date" value="${dateISO}" data-role="date"></div>
+                   <div><label class="muted">Start</label><input type="time" value="${st}" data-role="start"></div>
+                   <div><label class="muted">Ende</label><input type="time" value="${et}" data-role="end"></div>`;
+    cont.appendChild(div);
+  });
+}
+
+function toggleB2B(){
+  const ct=document.getElementById('customer_type').value;
+  document.getElementById('b2bBlock').parentElement.style.display=(ct==='Gewerblich')?'':'none';
+  refreshEventTypes();
+}
+function refreshEventTypes(){
+  const ct=document.getElementById('customer_type').value||'Privat';
+  const sel=document.getElementById('event_type'); const other=document.getElementById('event_type_other');
+  sel.innerHTML=''; (EVENT_OPTIONS[ct]||[]).forEach(v=>{ const o=document.createElement('option'); o.value=v; o.textContent=v; sel.appendChild(o); });
+  other.style.display=(sel.value==='Sonstige')?'':'none';
+}
+
+document.getElementById('customer_type').addEventListener('change', toggleB2B);
+document.addEventListener('change', (e)=>{
+  if(e.target && e.target.id==='event_type'){
+    document.getElementById('event_type_other').style.display=(e.target.value==='Sonstige')?'':'none';
+  }
+});
+
+document.getElementById('date_start').valueAsDate=new Date();
+document.getElementById('date_end').value='';
+toggleB2B(); rebuildDayRows();
+['date_start','date_end','start_time','end_time'].forEach(id=>document.getElementById(id).addEventListener('change', rebuildDayRows));
+
+async function calculate(){
+  const cont=document.getElementById('daysContainer');
+  const rows=Array.from(cont.querySelectorAll('.row'));
+  const dayTimes=rows.map(row=>({date:row.querySelector('[data-role="date"]').value,start:row.querySelector('[data-role="start"]').value,end:row.querySelector('[data-role="end"]').value}));
+  const evType=(document.getElementById('event_type').value==='Sonstige'? (document.getElementById('event_type_other').value||'Sonstige') : document.getElementById('event_type').value);
+
+  const params=new URLSearchParams({
+    date_start:document.getElementById('date_start').value,
+    date_end:document.getElementById('date_end').value,
+    start_time:document.getElementById('start_time').value,
+    end_time:document.getElementById('end_time').value,
+    guests:document.getElementById('guests').value,
+    customer_type:document.getElementById('customer_type').value,
+    event_type:evType,
+    cupType:document.getElementById('cupType').value,
+    waffles_on:document.getElementById('waffles_on').checked?'1':'0',
+    frozencap_on:document.getElementById('frozencap_on').checked?'1':'0',
+    softice_on:document.getElementById('softice_on').checked?'1':'0',
+    milkschaum_on:document.getElementById('milkschaum_on').checked?'1':'0',
+    branding_setup_on:document.getElementById('branding_setup_on').checked?'1':'0',
+    branding_becher_on:document.getElementById('branding_becher_on').checked?'1':'0',
+    day_times:JSON.stringify(dayTimes)
+  });
+
+  const resBox=document.getElementById('res');
+  resBox.textContent='Rechne …';
+  try{
+    const r=await fetch(`${API}?${params.toString()}`,{method:'GET'});
+    const j=await r.json();
+    if(!j.ok) throw new Error(j.error||'Unbekannter Fehler');
+    const ct=document.getElementById('customer_type').value;
+    resBox.textContent=`Preis (${ct}): ${j.result.price} — Wochentag: ${j.result.weekday}`;
+  }catch(e){ resBox.textContent='Fehler: '+e.message; }
+}
+document.getElementById('calc').addEventListener('click', calculate);
+
+document.getElementById('reset').addEventListener('click', ()=>{
+  document.getElementById('waffles_on').checked=false;
+  document.getElementById('frozencap_on').checked=false;
+  document.getElementById('softice_on').checked=false;
+  document.getElementById('milkschaum_on').checked=false;
+  document.getElementById('branding_setup_on').checked=false;
+  document.getElementById('branding_becher_on').checked=false;
+  document.getElementById('cupType').selectedIndex=0;
+  document.getElementById('customer_type').selectedIndex=0;
+  document.getElementById('res').textContent='Noch kein Ergebnis.';
+  toggleB2B(); refreshEventTypes();
+});
+
+// ====== CTA Lead Form (inline prompt) ======
+function promptLead(){
+  const html=`
+  <div style="display:grid;gap:10px">
+    <div class="row">
+      <div><label>Name</label><input id="lead_name" placeholder="Max Mustermann"></div>
+      <div><label>E‑Mail</label><input id="lead_email" type="email" placeholder="max@firma.de"></div>
+    </div>
+    <div class="row">
+      <div><label>Telefon</label><input id="lead_phone" placeholder="+49 ..."></div>
+      <div><label>Firma (optional)</label><input id="lead_company" placeholder="Firma/Organisation"></div>
+    </div>
+    <div><label>Eventort</label><input id="lead_location" placeholder="Straße, PLZ Ort"></div>
+    <div><label>Bemerkung</label><textarea id="lead_note" placeholder="Besondere Wünsche, Zeitfenster, Zufahrt, ..."></textarea></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn-ghost" id="lead_cancel">Abbrechen</button>
+      <button class="btn" id="lead_send">Senden</button>
+    </div>
+  </div>`;
+  const dlg=document.createElement('dialog'); dlg.style.width='min(720px,90vw)'; dlg.style.background='#fff'; dlg.style.color='var(--ink)'; dlg.style.border='1px solid var(--line)'; dlg.style.borderRadius='18px'; dlg.innerHTML=html; document.body.appendChild(dlg); dlg.showModal();
+  dlg.querySelector('#lead_cancel').addEventListener('click', ()=>{ dlg.close(); dlg.remove(); });
+  dlg.querySelector('#lead_send').addEventListener('click', async ()=>{
+    const params=new URLSearchParams({
+      mode:'lead',
+      name:document.getElementById('lead_name').value,
+      email:document.getElementById('lead_email').value,
+      phone:document.getElementById('lead_phone').value,
+      company:document.getElementById('lead_company').value,
+      location:document.getElementById('lead_location').value,
+      note:document.getElementById('lead_note').value,
+      // snapshot
+      date_start:document.getElementById('date_start').value,
+      date_end:document.getElementById('date_end').value,
+      start_time:document.getElementById('start_time').value,
+      end_time:document.getElementById('end_time').value,
+      guests:document.getElementById('guests').value,
+      customer_type:document.getElementById('customer_type').value,
+      event_type:(document.getElementById('event_type').value==='Sonstige'? (document.getElementById('event_type_other').value||'Sonstige') : document.getElementById('event_type').value),
+      cupType:document.getElementById('cupType').value,
+      waffles_on:document.getElementById('waffles_on').checked?'1':'0',
+      frozencap_on:document.getElementById('frozencap_on').checked?'1':'0',
+      softice_on:document.getElementById('softice_on').checked?'1':'0',
+      milkschaum_on:document.getElementById('milkschaum_on').checked?'1':'0',
+      branding_setup_on:document.getElementById('branding_setup_on').checked?'1':'0',
+      branding_becher_on:document.getElementById('branding_becher_on').checked?'1':'0'
+    });
+    try{
+      const r=await fetch(`${API}?${params.toString()}`,{method:'GET'});
+      const j=await r.json();
+      if(j.ok){ dlg.close(); dlg.remove(); alert('Danke! Wir melden uns kurzfristig mit einem Angebot.'); }
+      else{ alert('Fehler: '+(j.error||'Unbekannt')); }
+    }catch(e){ alert('Fehler: '+e.message); }
+  });
+}
+document.getElementById('cta').addEventListener('click', promptLead);
+</script>
+</body>
+</html>
