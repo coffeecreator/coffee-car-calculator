@@ -202,6 +202,7 @@ body.dark{
 </head>
 <body>
 <div class="wrap">
+<div id="summary" class="hidden"></div>
 <div class="header">
 <div class="brand"><h1>Coffee‑Car Buchungs‑Wizard</h1></div>
 <div class="steps">
@@ -335,18 +336,21 @@ function daysBetween(start,end){ const s=new Date(start); const e=end?new Date(e
 function formatEUR(v){ return new Intl.NumberFormat('de-DE',{ style:'currency', currency:'EUR'}).format(v); }
 function simulateAvailability(){ const r=Math.random(); if(r<0.20) return 0.15; else if(r<0.65) return 0.10; return 0.00; }
 function updateSummary(){
+
   const d1=state.date_start||'–', d2=state.date_end||state.date_start||'–';
   const days=daysBetween(state.date_start,state.date_end);
   const seg=state.segment||'–', pr=state.priority||'–';
   const disc=state.availabilityDiscount>0? Math.round(state.availabilityDiscount*100)+'% Frühbucher-Rabatt':'kein Rabatt';
   const html=`
-    <div class="badge">Termin: <strong>${d1}</strong> bis <strong>${d2}</strong> (${days} Tag/e)</div>
+    <div class="badge">Termin: <strong>${d1
+try { var el = document.getElementById("summary"); if(el){ el.innerHTML = el.innerHTML; } } catch(e){}
+}</strong> bis <strong>${d2}</strong> (${days} Tag/e)</div>
     <div style="margin-top:6px" class="badge">Ort: <strong>${state.location||'–'}</strong></div>
     <div style="margin-top:6px" class="badge">Segment: <strong>${seg}</strong></div>
     <div style="margin-top:6px" class="badge">Wichtig: <strong>${pr}</strong></div>
     <div style="margin-top:6px" class="badge">Verfügbarkeit: <strong>${state.available? 'verfügbar' : 'unbekannt'}</strong> / Rabatt: <strong>${disc}</strong></div>
   `;
-  $('summary').innerHTML=html;
+  if($('summary')) $('summary').innerHTML=html;
   document.body.classList.toggle('dark', ['Gewerblich','Agenturen / Wiederverkäufer'].includes(state.segment));
 }
 
@@ -713,7 +717,7 @@ $('sendLead').addEventListener('click', async ()=>{
     oldUpdate();
     // replace "Wichtig" badge to show joined list
     const pr = (state.priorities && state.priorities.length) ? state.priorities.join(', ') : (state.priority || '–');
-    const summary = document.getElementById('summary');
+    const summary = document.getElementById('summary'); /* safe */
     if(summary){
       // rebuild with the existing HTML but swap the "Wichtig" line
       const d1 = state.date_start || '–';
