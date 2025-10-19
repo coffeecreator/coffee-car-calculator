@@ -187,6 +187,17 @@ body.dark .switch { background:#20323a; }
 .daytimes-grid .cell { display:flex; flex-direction:column; }
 .daytimes-grid label { font-weight:600; margin:0 0 6px 0; }
 body.dark .daytimes-card { background:#10161c; border-color:#1f2a34; }
+/* === Dark-mode variable overrides + noside layout === */
+body.dark{
+  --bg:#0b0f14;
+  --card:#0f141a;
+  --line:#1f2a34;
+  --ink:#e6eef0;
+  --ink-soft:#aebcc0;
+  --accent:#8BC4B5;
+}
+body.noside .grid2{ grid-template-columns: 1fr; }
+body.noside #sidepanel{ display:none; }
 </style>
 </head>
 <body>
@@ -197,6 +208,7 @@ body.dark .daytimes-card { background:#10161c; border-color:#1f2a34; }
 <div class="dot" id="s1"></div><div class="dot" id="s2"></div><div class="dot" id="s3"></div>
 <div class="dot" id="s4"></div><div class="dot" id="s5"></div><div class="dot" id="s6"></div>
 </div>
+<button class="btn-ghost" id="toggleSide" style="padding:8px 12px">Seitenleiste aus</button>
 </div>
 <div class="grid2">
 <div class="card">
@@ -263,19 +275,7 @@ body.dark .daytimes-card { background:#10161c; border-color:#1f2a34; }
 </select>
 </div>
 </div>
-<div class="addons-grid" id="addonsGrid"><div class="addon-card" data-toggle="waffles_on"><div><h4>Waffeln</h4><p>Frische Waffeln am Stiel (~80 Stk/h)</p></div><div class="switch" id="waffles_on_switch"></div><input id="waffles_on" style="display:none" type="checkbox"/></div><div class="addon-card" data-toggle="frozencap_on"><div><h4>Frozen Cappuccino</h4><p>Cremig-gekühlt – Sommer-Favorit</p></div><div class="switch" id="frozencap_on_switch"></div><input id="frozencap_on" style="display:none" type="checkbox"/></div><div class="addon-card" data-toggle="softice_on">
-  <div style="display:flex;gap:10px;align-items:center">
-    <img src="Softeis_CC.png" alt="Softeis Vanille/Schoko im Chois-Becher"
-         width="64" height="64"
-         style="border-radius:10px;object-fit:cover;border:1px solid var(--line);background:#f5f7f6"/>
-    <div>
-      <h4>Softeis</h4>
-      <p>Vanille / Schoko / Gemischt – perfekt für Affogato</p>
-    </div>
-  </div>
-  <div class="switch" id="softice_on_switch"></div>
-  <input id="softice_on" style="display:none" type="checkbox"/>
-</div><div class="addon-card" data-toggle="milkschaum_on"><div><h4>Milchschaumdrucker</h4><p>Logo/Foto/Schrift direkt auf Milchschaum</p></div><div class="switch" id="milkschaum_on_switch"></div><input id="milkschaum_on" style="display:none" type="checkbox"/></div></div><div class="toolbar">
+<div class="addons-grid" id="addonsGrid"><div class="addon-card" data-toggle="waffles_on"><div><h4>Waffeln</h4><p>Frische Waffeln am Stiel (~80 Stk/h)</p></div><div class="switch" id="waffles_on_switch"></div><input id="waffles_on" style="display:none" type="checkbox"/></div><div class="addon-card" data-toggle="frozencap_on"><div><h4>Frozen Cappuccino</h4><p>Cremig-gekühlt – Sommer-Favorit</p></div><div class="switch" id="frozencap_on_switch"></div><input id="frozencap_on" style="display:none" type="checkbox"/></div><div class="addon-card" data-toggle="softice_on"><div><h4>Softeis</h4><p>Vanille/Schoko – perfekt für Affogato</p></div><div class="switch" id="softice_on_switch"></div><input id="softice_on" style="display:none" type="checkbox"/></div><div class="addon-card" data-toggle="milkschaum_on"><div><h4>Milchschaumdrucker</h4><p>Logo/Foto/Schrift direkt auf Milchschaum</p></div><div class="switch" id="milkschaum_on_switch"></div><input id="milkschaum_on" style="display:none" type="checkbox"/></div></div><div class="toolbar">
 <button class="btn-ghost" id="back5">Zurück</button>
 <button class="btn" id="calc">Preis berechnen</button>
 </div>
@@ -299,14 +299,10 @@ body.dark .daytimes-card { background:#10161c; border-color:#1f2a34; }
 <div class="info hidden" id="leadMsg"></div>
 </div>
 </div>
-<div class="card">
+<div class="card" id="sidepanel"><div class="card" id="sidepanel">
 <h3>Ihre Angaben</h3>
 <div class="muted" id="summary">
 <div><span class="badge">Noch keine Angaben</span></div>
-</div>
-<div style="margin-top:16px">
-<h3>Hinweis</h3>
-<p class="muted">Wochentags‑Zuschläge sind in der Kalkulation bereits berücksichtigt. Zusätzlich gelten tagesabhängige Rabatte und Mehrtages‑Vorteile.</p>
 </div>
 </div>
 </div>
@@ -1036,87 +1032,19 @@ document.getElementById('date_end')?.addEventListener('change', rebuildDayTimes)
     showStep(6);
   });
 })();
+
+// === Toggle right side panel ===
+(function(){
+  const btn = document.getElementById('toggleSide');
+  const side = document.getElementById('sidepanel');
+  if(!btn || !side) return;
+  function sync(){
+    btn.textContent = document.body.classList.contains('noside') ? 'Seitenleiste an' : 'Seitenleiste aus';
+  }
+  btn.addEventListener('click', ()=>{ document.body.classList.toggle('noside'); sync(); });
+  sync();
+})();
+
 </script>
-
-<!-- ===== Legal Footer (Coffee-Car GmbH) ===== -->
-<style>
-  .cc-footer{font:14px/1.6 Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial;color:var(--ink-soft);margin-top:28px}
-  .cc-footer .wrap{max-width:1100px;margin:0 auto;padding:12px 18px;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between}
-  .cc-footer a{color:var(--accent);text-decoration:none} .cc-footer a:hover{text-decoration:underline}
-  .cc-modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:9999;padding:16px}
-  .cc-card{background:var(--card);max-width:860px;width:100%;border-radius:16px;border:1px solid var(--line);box-shadow:0 10px 30px rgba(0,0,0,.12);overflow:auto;max-height:90vh}
-  .cc-card header{padding:14px 18px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
-  .cc-card h3{margin:0;font-size:18px} .cc-card .cc-body{padding:16px 18px}
-  .cc-close{background:none;border:0;font-size:22px;cursor:pointer;line-height:1;color:var(--ink-soft)}
-  body.dark .cc-card{background:#10161c;border-color:#1f2a34;color:#e6eef0}
-  body.dark .cc-card header{border-color:#1f2a34}
-</style>
-
-<footer class="cc-footer" aria-label="Seitenabschluss">
-  <div class="wrap">
-    <div>© <span id="cc-year"></span> Coffee-Car GmbH</div>
-    <nav>
-      <a href="#" data-open="impressum">Impressum</a> ·
-      <a href="#" data-open="datenschutz">Datenschutz</a>
-    </nav>
-  </div>
-</footer>
-
-<!-- Modal: Impressum -->
-<div class="cc-modal" id="modal-impressum" aria-hidden="true">
-  <div class="cc-card" role="dialog" aria-modal="true" aria-labelledby="impressum-title">
-    <header>
-      <h3 id="impressum-title">Impressum</h3>
-      <button class="cc-close" data-close>&times;</button>
-    </header>
-    <div class="cc-body">
-      <p><strong>Coffee-Car GmbH</strong><br>
-      Theodor-Heuss-Allee 112, 60486 Frankfurt am Main, Deutschland</p>
-      <p>E-Mail: <a href="mailto:info@coffee-car.com">info@coffee-car.com</a><br>
-      Telefon: +49 711 219535609</p>
-      <p>Geschäftsführer: <strong>Alkan Kurdes</strong><br>
-      Registergericht: Amtsgericht Frankfurt am Main · HRB 128817<br>
-      USt-ID (§ 27a UStG): <em>wird nachgetragen</em></p>
-      <p>Verantwortlich i.S.d. § 18 Abs. 2 MStV: Alkan Kurdes, Theodor-Heuss-Allee 112, 60486 Frankfurt am Main</p>
-    </div>
-  </div>
-</div>
-
-<!-- Modal: Datenschutz -->
-<div class="cc-modal" id="modal-datenschutz" aria-hidden="true">
-  <div class="cc-card" role="dialog" aria-modal="true" aria-labelledby="ds-title">
-    <header>
-      <h3 id="ds-title">Datenschutzerklärung (Kalkulator)</h3>
-      <button class="cc-close" data-close>&times;</button>
-    </header>
-    <div class="cc-body">
-      <p><strong>Verantwortlicher:</strong> Coffee-Car GmbH, Theodor-Heuss-Allee 112, 60486 Frankfurt am Main ·
-      <a href="mailto:info@coffee-car.com">info@coffee-car.com</a> · +49 711 219535609</p>
-      <p><strong>Zwecke/Rechtsgrundlagen:</strong> Bereitstellung des Kalkulators (Art. 6 Abs. 1 lit. f DSGVO) und
-      vorvertragliche Anfragen/Angebote (Art. 6 Abs. 1 lit. b DSGVO).</p>
-      <p><strong>Daten:</strong> Eingaben zur Berechnung (Ort, Datum, Gästezahl, Optionen). Ohne Absenden <u>keine</u> Übertragung.</p>
-      <p><strong>Speicherung im Browser:</strong> Komfortfunktionen (z. B. <code>localStorage</code>), jederzeit durch Nutzer löschbar.</p>
-      <p><strong>Cookies/Tracking:</strong> Keine Analyse-/Marketing-Cookies; keine Dritt-Tracker (sofern nicht ausdrücklich aktiviert).</p>
-      <p><strong>Formular/Anfrage (optional):</strong> Bei Angebotsanfrage Verarbeitung der Kontakt- & Eventdaten (Art. 6 Abs. 1 lit. b).
-      <em>Wenn Versand via Google Apps Script/Sheets: Google als Auftragsverarbeiter (AVV/SCC, Art. 46 DSGVO).</em></p>
-      <p><strong>Weitergabe:</strong> nur wenn erforderlich (IT-Dienstleister) oder gesetzlich.</p>
-      <p><strong>Speicherdauer:</strong> Browserdaten bis Löschung; Anfragen bis Abschluss/Aufbewahrungsfristen.</p>
-      <p><strong>Rechte:</strong> Auskunft, Berichtigung, Löschung, Einschränkung, Datenübertragbarkeit, Widerspruch (Art. 15–21 DSGVO); Widerruf von Einwilligungen.</p>
-      <p><strong>Beschwerde:</strong> HBDI Hessen, Gustav-Stresemann-Ring 1, 65189 Wiesbaden. · <span id="ds-stand"></span></p>
-    </div>
-  </div>
-</div>
-
-<script>
-  document.getElementById('cc-year').textContent = new Date().getFullYear();
-  document.getElementById('ds-stand').textContent = 'Stand: ' + new Date().toLocaleDateString('de-DE');
-  const $ = s => document.querySelector(s), $$ = s => Array.from(document.querySelectorAll(s));
-  const modals = { impressum: document.getElementById('modal-impressum'), datenschutz: document.getElementById('modal-datenschutz') };
-  $$('a[data-open]').forEach(a => a.addEventListener('click', e => { e.preventDefault(); modals[a.dataset.open].style.display='flex'; }));
-  $$('.cc-modal [data-close]').forEach(b => b.addEventListener('click', () => b.closest('.cc-modal').style.display='none'));
-  $$('.cc-modal').forEach(m => m.addEventListener('click', e => { if(e.target===m) m.style.display='none'; }));
-</script>
-<!-- ===== Ende Legal Footer ===== -->
-
 </body>
 </html>
