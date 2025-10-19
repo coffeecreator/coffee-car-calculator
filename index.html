@@ -1,393 +1,1122 @@
-
 <!DOCTYPE html>
 
 <html lang="de">
 <head>
 <meta charset="utf-8"/>
-<meta content="width=device-width,initial-scale=1" name="viewport"/>
-<title>Coffee‑Car Preiskalkulator · CI v4 (Bright)</title>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>Coffee‑Car Wizard · v1 Final</title>
 <style>
-  :root{
-    /* CI: Helle Variante – Platzhalterwerte, leicht angepasst für Web-Kontrast.
-       Wenn du exakte HEX aus der PDF nennen willst, tausche sie hier 1:1 aus. */
-    --mint:#8BC4B5;
-    --mint-strong:#5DB6A1;
-    --ink:#1A1F2B;
-    --ink-soft:#3B4150;
-    --bg:#FAFBFC;
-    --card:#FFFFFF;
-    --line:#E6E8EB;
-    --muted:#6B7280;
-    --accent:#0F766E;
-    --radius:16px;
-  }
-  *{box-sizing:border-box}
-  body{margin:0; font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; background:var(--bg); color:var(--ink)}
-  .wrap{max-width:1200px; margin:auto; padding:22px}
-  .hero{display:grid;grid-template-columns:1.15fr .85fr;gap:18px;align-items:stretch}
+  :root{ --mint:#8BC4B5; --mint-strong:#5DB6A1; --ink:#1A1F2B; --ink-soft:#3B4150; --bg:#FAFBFC; --card:#FFFFFF; --line:#E6E8EB; --muted:#6B7280; --accent:#0F766E; --radius:16px; }
+  *{box-sizing:border-box} body{margin:0; font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; background:var(--bg); color:var(--ink)}
+  .wrap{max-width:1100px; margin:auto; padding:22px}
+  .header{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px}
+  .brand{display:flex; align-items:center; gap:10px}
+  .chip{display:inline-block; padding:6px 10px; border-radius:999px; background:linear-gradient(90deg,#fff,#f4fffb); border:1px solid var(--line); color:var(--accent); font-weight:700}
+  h1{margin:0; font-size:clamp(20px,3.5vw,30px)}
   .card{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:18px; box-shadow:0 4px 18px rgba(0,0,0,.04)}
-  .title{display:flex; align-items:center; gap:10px}
-  .chip{display:inline-block; padding:6px 10px; border-radius:999px; background:linear-gradient(90deg,#fff, #f4fffb); border:1px solid var(--line); color:var(--accent); font-weight:700}
-  h1{margin:0 0 6px; font-size:clamp(22px,4vw,34px); color:var(--ink)}
-  h2{margin:0 0 10px; font-size:20px; color:var(--accent)}
-  label{display:block; font-weight:700; margin:10px 0 6px; color:var(--ink)}
-  input,select,button,textarea{width:100%; padding:12px; border-radius:12px; border:1px solid var(--line); background:#FFF; color:var(--ink)}
+  .muted{color:var(--muted)}
+  .row{display:grid; gap:12px; grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+  label{display:block; font-weight:700; margin:6px 0 6px}
+  input,select,button,textarea{width:100%; padding:12px; border-radius:12px; border:1px solid var(--line); background:#fff; color:var(--ink)}
   input:focus,select:focus,textarea:focus{outline:2px solid var(--mint); outline-offset:1px}
   textarea{min-height:96px}
-  .row{display:grid; gap:12px; grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
-  .muted{color:var(--muted)}
-  .badge{display:inline-flex; align-items:center; gap:8px; padding:6px 10px; border-radius:999px; background:#F3F7F6; border:1px dashed var(--line); color:var(--accent)}
   .btn{cursor:pointer; font-weight:900; background:linear-gradient(90deg,var(--mint),var(--mint-strong)); border:none; color:#083B35}
   .btn-ghost{background:transparent; border:1px solid var(--line); color:var(--ink)}
-  .thumbs{display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px}
-  .thumbs img{width:100%; aspect-ratio:4/3; object-fit:cover; border-radius:14px; border:1px solid var(--line)}
-  .info{display:flex; gap:12px; align-items:flex-start; border-top:1px dashed var(--line); padding-top:12px; margin-top:12px}
-  .info img{width:88px; height:88px; object-fit:cover; border-radius:14px; border:1px solid var(--line); background:#FFF}
-  .footer-note{font-size:12px; color:var(--muted); margin-top:10px}
-  .divider{height:1px; background:linear-gradient(90deg,transparent,var(--mint),transparent); margin:16px 0}
+  .toolbar{display:flex; gap:10px; justify-content:flex-end; margin-top:12px}
+  .steps{display:flex; gap:8px; align-items:center; margin:12px 0 16px}
+  .dot{width:11px; height:11px; border-radius:50%; background:#d7e7e3; border:1px solid #cfe7df}
+  .dot.active{background:var(--mint); border-color:var(--mint-strong)}
+  .hidden{display:none !important}
+  .info{display:flex; gap:12px; align-items:flex-start; padding:10px; border:1px dashed var(--line); border-radius:12px; background:#F6FAF9; margin-top:8px}
+  .ok{color:#0C3F37} .warn{color:#8B5E00}
+  .pricebox{display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:999px; background:#F3F7F6; border:1px dashed var(--line); color:var(--accent); margin-top:10px}
+  .grid2{display:grid; grid-template-columns:1.1fr .9fr; gap:18px}
+  .ref-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px}
+  .ref-card{border:1px solid var(--line); border-radius:14px; padding:12px; background:#fff}
+  .ref-card h4{margin:0 0 4px 0} .ref-card p{margin:0; color:var(--muted)}
+  .ref-actions{display:flex; gap:8px; margin-top:8px}
+  .badge{display:inline-flex; gap:8px; align-items:center; padding:6px 10px; border-radius:999px; background:#EEF7F5; border:1px solid var(--line); color:#0C3F37}
+  body.dark{ background:#0b0f14; color:#e6eef0 }
+  body.dark .card{ background:#0f141a; border-color:#1f2a34 }
+  body.dark input, body.dark select, body.dark textarea{ background:#0b0f14; color:#e6eef0; border-color:#1f2a34 }
+  body.dark .btn-ghost{ color:#d5e2e4; border-color:#1f2a34 }
+  body.dark .info{ background:#0f1512; border-color:#1f2a34 }
+  body.dark .ref-card{ background:#10161c; border-color:#1f2a34 }
+  body.dark .pricebox{ background:#0f1512; border-color:#1f2a34; color:#8BC4B5 }
 
 
-/* ---- Zusatzoptionen neu ---- */
-.options-grid {
+/* --- Segment selection (Step 2) --- */
+.segment-grid {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+  margin-top: 12px;
 }
-.option-card {
-  display: grid;
-  grid-template-columns: 84px 1fr auto;
-  gap: 12px;
-  align-items: center;
-  padding: 12px;
-  border: 1px solid var(--line);
+.segment-card {
+  border: 2px solid var(--line);
   border-radius: var(--radius);
+  padding: 16px 14px;
+  text-align: center;
+  cursor: pointer;
+  transition: all .2s ease;
   background: #fff;
 }
-.option-card .thumb {
-  width: 84px;
-  aspect-ratio: 1 / 1;
-  overflow: hidden;
-  border-radius: 10px;
+.segment-card:hover {
+  border-color: var(--mint);
+  background: #f4fffb;
 }
-.option-card .thumb img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
+.segment-card.active {
+  border-color: var(--mint-strong);
+  box-shadow: 0 0 0 3px rgba(139,196,181,0.25);
+  background: linear-gradient(180deg, #ffffff, #f6fffb);
 }
-.option-card h4 {
-  margin: 0 0 4px 0;
-  font-size: 1rem;
-}
-.option-card p {
+.segment-card h4 {
   margin: 0;
-  font-size: .9rem;
+  font-size: 1.05rem;
+  color: var(--ink);
+}
+.segment-card p {
+  margin: 4px 0 0;
+  font-size: .85rem;
   color: var(--muted);
 }
-.option-toggle {
+body.dark .segment-card {
+  background: #10161c;
+  border-color: #1f2a34;
+  color: #e6eef0;
+}
+body.dark .segment-card.active {
+  background: #0f1d18;
+  border-color: var(--mint-strong);
+  box-shadow: 0 0 0 3px rgba(91,182,160,0.25);
+}
+
+
+
+/* --- Priority multi-select cards (Step 3) --- */
+.choice-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 14px;
+  margin-top: 12px;
+}
+.choice-card {
+  border: 2px solid var(--line);
+  border-radius: var(--radius);
+  padding: 14px 14px;
+  cursor: pointer;
+  transition: all .2s ease;
+  background: #fff;
+  min-height: 70px;
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
+  text-align: center;
+  user-select: none;
 }
-.option-toggle input[type="checkbox"] {
-  width: 20px;
-  height: 20px;
+.choice-card:hover { border-color: var(--mint); background: #f4fffb; }
+.choice-card.active {
+  border-color: var(--mint-strong);
+  box-shadow: 0 0 0 3px rgba(139,196,181,0.25);
+  background: linear-gradient(180deg, #ffffff, #f6fffb);
+}
+body.dark .choice-card {
+  background: #10161c;
+  border-color: #1f2a34;
+  color: #e6eef0;
+}
+body.dark .choice-card.active {
+  background: #0f1d18;
+  border-color: var(--mint-strong);
+  box-shadow: 0 0 0 3px rgba(91,182,160,0.25);
 }
 
-/* ---- Media (rechte Spalte) ---- */
-.media-grid {
+
+
+/* --- Step 5: nicer layout & addon cards --- */
+.form-grid-2 {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 14px;
+}
+.addons-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 12px;
+  margin-top: 8px;
 }
-.media-card {
-  border: 1px solid var(--line);
+.addon-card {
+  border: 2px solid var(--line);
   border-radius: var(--radius);
-  padding: 8px;
+  padding: 12px 14px;
   background: #fff;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all .2s ease;
 }
-.media-img-wrap {
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  overflow: hidden;
-  border-radius: 10px;
+.addon-card:hover { border-color: var(--mint); background: #f4fffb; }
+.addon-card.active {
+  border-color: var(--mint-strong);
+  background: linear-gradient(180deg, #ffffff, #f6fffb);
+  box-shadow: 0 0 0 3px rgba(139,196,181,0.2);
 }
-.media-img-wrap img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
+.addon-card h4 { margin: 0; font-size: 1rem; }
+.addon-card p { margin: 2px 0 0; font-size: .85rem; color: var(--muted); }
+.switch {
+  position: relative; width: 44px; height: 24px;
+  background: #d7e7e3; border-radius: 999px; transition: background .2s ease;
 }
-.media-caption {
-  font-size: .9rem;
-  margin-top: 6px;
-  color: var(--muted);
+.switch::after {
+  content: ''; position: absolute; top: 3px; left: 3px;
+  width: 18px; height: 18px; border-radius: 50%; background: #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,.2); transition: left .2s ease;
 }
+.switch.on { background: var(--mint-strong); }
+.switch.on::after { left: 23px; }
+body.dark .addon-card { background:#10161c; border-color:#1f2a34; color:#e6eef0; }
+body.dark .addon-card.active { background:#0f1d18; border-color:var(--mint-strong); box-shadow: 0 0 0 3px rgba(91,182,160,0.25); }
+body.dark .switch { background:#20323a; }
 
+
+/* --- Per-day time grid (multi-day support) --- */
+.daytimes-card { border:1px solid var(--line); border-radius: var(--radius); padding: 12px; background: #fff; margin: 10px 0; }
+.daytimes-grid { display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+.daytimes-grid .cell { display:flex; flex-direction:column; }
+.daytimes-grid label { font-weight:600; margin:0 0 6px 0; }
+body.dark .daytimes-card { background:#10161c; border-color:#1f2a34; }
 </style>
 </head>
 <body>
 <div class="wrap">
-<div class="hero">
+<div class="header">
+<div class="brand"><span class="chip">Chois Coffee</span><h1>Coffee‑Car Buchungs‑Wizard</h1></div>
+<div class="steps">
+<div class="dot" id="s1"></div><div class="dot" id="s2"></div><div class="dot" id="s3"></div>
+<div class="dot" id="s4"></div><div class="dot" id="s5"></div><div class="dot" id="s6"></div>
+</div>
+</div>
+<div class="grid2">
 <div class="card">
-<div class="title"><span class="chip">Chois Coffee</span><h1>Coffee‑Car Preiskalkulator</h1></div>
-<p class="muted">Praxisnah. Transparent. Live aus deinem Kalkulations‑Sheet.</p>
-<div class="divider"></div>
+<div id="step1">
+<h2>1) Wann &amp; Wo findet das Event statt?</h2>
 <div class="row">
 <div><label>Datum (Start)</label><input id="date_start" type="date"/></div>
-<div><label>Datum (Ende)</label><input id="date_end" type="date"/></div>
+<div><label>Datum (Ende)</label><input id="date_end" placeholder="optional" type="date"/></div>
+<div><label>Ort / PLZ</label><input id="location" placeholder="z. B. 60313 Frankfurt"/></div>
+</div>
+<div class="toolbar">
+<button class="btn" id="checkAvail">Verfügbarkeit prüfen</button>
+</div>
+<div class="info hidden" id="availInfo"></div>
+</div>
+<div class="hidden" id="step2">
+<h2>2) Wer fragt an?</h2>
+<div class="segment-grid" id="segmentGrid"><div class="segment-card" data-value="Privat"><h4>Privat</h4><p>Hochzeiten, Geburtstage, Familienfeiern</p></div><div class="segment-card" data-value="Gewerblich"><h4>Gewerblich</h4><p>Firmenfeiern, Messen, Eröffnungen</p></div><div class="segment-card" data-value="Agenturen / Wiederverkäufer"><h4>Agenturen / Wiederverkäufer</h4><p>Partner, White‑Label, Promotion-Einsätze</p></div><div class="segment-card" data-value="Behörden / Öffentliche Einrichtungen"><h4>Behörden / Öffentliche Einrichtungen</h4><p>Schulen, Ämter, Stadtverwaltungen, öffentliche Veranstaltungen</p></div></div>
+<div class="toolbar">
+<button class="btn-ghost" id="back2">Zurück</button>
+<button class="btn" id="next2">Weiter</button>
+</div>
+</div>
+<div class="hidden" id="step3">
+<h2>3) Was ist Ihnen besonders wichtig?</h2>
+<div class="choice-grid" id="priorityGrid"><div class="choice-card" data-value="Preis &amp; Wirtschaftlichkeit">Preis &amp; Wirtschaftlichkeit</div><div class="choice-card" data-value="Einfach &amp; Zuverlässig">Einfach &amp; Zuverlässig</div><div class="choice-card" data-value="Qualität &amp; Auftritt">Qualität &amp; Auftritt</div><div class="choice-card" data-value="Luxus &amp; Individualisierung">Luxus &amp; Individualisierung</div><div class="choice-card" data-value="Nachhaltigkeit">Nachhaltigkeit</div><div class="choice-card" data-value="Faire Löhne">Faire Löhne</div><div class="choice-card" data-value="Große Auswahl an Milchalternativen">Große Auswahl an Milchalternativen</div><div class="choice-card" data-value="Barista mit Latte‑Art‑Skill">Barista mit Latte‑Art‑Skill</div></div>
+<div class="toolbar">
+<button class="btn-ghost" id="back3">Zurück</button>
+<button class="btn" id="next3">Weiter</button>
+</div>
+</div>
+<div class="hidden" id="step4">
+<h2>4) Passende Referenzen</h2>
+<p class="muted">Aus über 3.000 Coffee‑Events zeigen wir Ihnen passende Beispiele.</p>
+<div class="row">
+<div>
+<label>Kategorie</label>
+<select id="refCategory"></select>
+</div>
+<div>
+<label>Unterkategorie</label>
+<select id="refSub"></select>
+</div>
+</div>
+<div class="ref-grid" id="refGrid" style="margin-top:12px"></div>
+<div class="toolbar">
+<button class="btn-ghost" id="back4">Zurück</button>
+<button class="btn" id="next4">Weiter</button>
+</div>
+</div>
+<div class="hidden" id="step5">
+<h2>5) Preis &amp; Optionen</h2><div class="daytimes-card" id="dayTimesCard" style="display:none"><div class="daytimes-grid" id="dayTimesGrid"></div></div>
+<div class="form-grid-2">
+<div><label>Gästezahl</label><input id="guests" min="1" type="number" value="80"/></div>
 <div><label>Ausschankbeginn</label><input id="start_time" type="time" value="09:00"/></div>
 <div><label>Ausschankende</label><input id="end_time" type="time" value="13:00"/></div>
-<div><label>Gästezahl</label><input id="guests" min="1" type="number" value="90"/></div>
-<div>
-<label>Kundentyp</label>
-<select id="customer_type">
-<option>Privat</option>
-<option>Gewerblich</option>
-</select>
-</div>
-<div>
-<label>Art des Events</label>
-<select id="event_type"></select>
-<input id="event_type_other" placeholder="Bitte angeben…" style="display:none;margin-top:8px"/>
-</div>
 <div>
 <label>Becher / Tassen</label>
 <select id="cupType">
-<option>Einwegbecher (100% kompostierbar)</option>
+<option>Einwegbecher (kompostierbar)</option>
 <option>Porzellantassen</option>
 <option>Kunde stellt Tassen</option>
 <option>Branding‑Becher</option>
 </select>
 </div>
 </div>
-<div class="badge" id="multiInfo" style="display:none; margin-top:8px">
-        Mehrtägiges Event erkannt – bitte Start/Ende je Tag prüfen.
-      </div>
-<div class="card" id="daysCard" style="margin-top:12px; display:none">
-<h2>Ausschankzeiten je Tag</h2>
-<div id="daysContainer"></div>
-<div class="footer-note">Standard sind Beginn/Ende des ersten Tages; pro Tag frei anpassbar.</div>
-</div>
-<div class="card" style="margin-top:12px"><h2>Zusatzoptionen (Ja/Nein)</h2><div class="options-grid"><div class="option-card"><div class="thumb"><img alt="Waffeln" loading="lazy" src="waffel.png"/></div><div><h4>Waffeln</h4><p>Frische Waffeln am Stiel mit Puderzucker und Schokosoße, ~80 Stück/Stunde.</p></div><label class="option-toggle"><input id="waffles_on" type="checkbox"/><span>Ja</span></label></div><div class="option-card"><div class="thumb"><img alt="Frozen Cappuccino" loading="lazy" src="mercedes.jpg"/></div><div><h4>Frozen Cappuccino</h4><p>Cremig‑gekühlt – ideal für Sommer-Events.</p></div><label class="option-toggle"><input id="frozencap_on" type="checkbox"/><span>Ja</span></label></div><div class="option-card"><div class="thumb"><img alt="Softeis" loading="lazy" src="bulli.jpg"/></div><div><h4>Softeis</h4><p>Vanille oder Schoko. Perfekt für Affogato.</p></div><label class="option-toggle"><input id="softice_on" type="checkbox"/><span>Ja</span></label></div><div class="option-card"><div class="thumb"><img alt="Milchschaumdrucker" loading="lazy" src="milkschaum.jpg"/></div><div><h4>Milchschaumdrucker</h4><p>Tagespauschale inkl. Druckflatrate. Logos, Motive oder Texte direkt auf Milchschaum.</p></div><label class="option-toggle"><input id="milkschaum_on" type="checkbox"/><span>Ja</span></label></div></div></div>
-<div class="card" style="margin-top:12px">
-<h2>Branding‑Optionen (nur für Gewerbekunden)</h2>
-<div class="row" id="b2bBlock">
-<label style="display:flex;align-items:center;gap:10px"><input id="branding_setup_on" type="checkbox"/><span>Branding Setup <span class="muted">(Preis auf Anfrage)</span></span></label>
-<label style="display:flex;align-items:center;gap:10px"><input id="branding_becher_on" type="checkbox"/><span>Branding‑Becher <span class="muted">(Preis auf Anfrage)</span></span></label>
-</div>
-<div class="footer-note">Branding-Optionen werden protokolliert und individuell angeboten (keine automatische Preisberechnung).</div>
-</div>
-<div style="display:flex; gap:10px; margin-top:14px">
+<div class="addons-grid" id="addonsGrid"><div class="addon-card" data-toggle="waffles_on"><div><h4>Waffeln</h4><p>Frische Waffeln am Stiel (~80 Stk/h)</p></div><div class="switch" id="waffles_on_switch"></div><input id="waffles_on" style="display:none" type="checkbox"/></div><div class="addon-card" data-toggle="frozencap_on"><div><h4>Frozen Cappuccino</h4><p>Cremig-gekühlt – Sommer-Favorit</p></div><div class="switch" id="frozencap_on_switch"></div><input id="frozencap_on" style="display:none" type="checkbox"/></div><div class="addon-card" data-toggle="softice_on">
+  <div style="display:flex;gap:10px;align-items:center">
+    <img src="Softeis_CC.png" alt="Softeis Vanille/Schoko im Chois-Becher"
+         width="64" height="64"
+         style="border-radius:10px;object-fit:cover;border:1px solid var(--line);background:#f5f7f6"/>
+    <div>
+      <h4>Softeis</h4>
+      <p>Vanille / Schoko / Gemischt – perfekt für Affogato</p>
+    </div>
+  </div>
+  <div class="switch" id="softice_on_switch"></div>
+  <input id="softice_on" style="display:none" type="checkbox"/>
+</div><div class="addon-card" data-toggle="milkschaum_on"><div><h4>Milchschaumdrucker</h4><p>Logo/Foto/Schrift direkt auf Milchschaum</p></div><div class="switch" id="milkschaum_on_switch"></div><input id="milkschaum_on" style="display:none" type="checkbox"/></div></div><div class="toolbar">
+<button class="btn-ghost" id="back5">Zurück</button>
 <button class="btn" id="calc">Preis berechnen</button>
-<button class="btn-ghost" id="reset">Zurücksetzen</button>
-<button class="btn-ghost" id="cta">Unverbindlich anfragen</button>
 </div>
-<div class="badge" id="res" style="margin-top:12px; background:#F0FFFA; border-color:#d9f5ea; color:#0C3F37">Noch kein Ergebnis.</div>
-<div class="footer-note">Privatkunden sehen Brutto, Gewerbliche Netto. Add‑ons gelten als Tagespauschalen.</div>
+<div class="pricebox hidden" id="priceOut"></div>
+</div>
+<div class="hidden" id="step6">
+<h2>6) Angebot sichern</h2>
+<p class="muted">Wir senden Ihnen das Angebot per E‑Mail zu und reservieren den Termin vorläufig.</p>
+<div class="row">
+<div><label>Name</label><input id="lead_name" placeholder="Max Mustermann"/></div>
+<div><label>E‑Mail</label><input id="lead_email" placeholder="max@firma.de" type="email"/></div>
+<div><label>Telefon</label><input id="lead_phone" placeholder="+49 ..."/></div>
+</div>
+<div class="row">
+<label><input id="consent" type="checkbox"/> Ich stimme der Verarbeitung meiner Angaben zum Zweck der Angebotserstellung zu.</label>
+</div>
+<div class="toolbar">
+<button class="btn-ghost" id="back6">Zurück</button>
+<button class="btn" id="sendLead">Angebot sichern</button>
+</div>
+<div class="info hidden" id="leadMsg"></div>
+</div>
 </div>
 <div class="card">
-<h2>Bilder &amp; Impressionen</h2><div class="media-grid" id="mediaGrid"></div>
-
-
-<h2>Porzellan‑Service</h2>
-<div class="info">
-<img alt="Porzellan" src="ape.jpg"/>
-<div>Ausschank in <strong>Porzellantassen</strong> inkl. <strong>Unterteller</strong>, <strong>Löffel</strong> &amp; <strong>Spülen</strong>.</div>
+<h3>Ihre Angaben</h3>
+<div class="muted" id="summary">
+<div><span class="badge">Noch keine Angaben</span></div>
+</div>
+<div style="margin-top:16px">
+<h3>Hinweis</h3>
+<p class="muted">Wochentags‑Zuschläge sind in der Kalkulation bereits berücksichtigt. Zusätzlich gelten tagesabhängige Rabatte und Mehrtages‑Vorteile.</p>
 </div>
 </div>
 </div>
 </div>
 <script>
-// ====== CONFIG ======
 const API = "https://script.google.com/macros/s/AKfycbw4-wgD6hQFoPHGtbew27ysmR8q0NokxGfV_ym2PKgMi5bt415b-PrtG12tKbUXwCpxeg/exec";
 
-const EVENT_OPTIONS = {
-  'Privat': ['Hochzeit','Geburtstag','Sonstige'],
-  'Gewerblich': ['Messe','Kongress','Mitarbeiterfest','Promotion','Jubiläum','Eröffnungsfeier']
+// Placeholder map; connect to Excel/Sheet via build step later
+const REF_MAP = {
+  "Privat": {"Hochzeit": {"link":"#", "desc":"Romantische Hochzeiten"}, "Geburtstag": {"link":"#", "desc":"Private Geburtstagsfeiern"}},
+  "Gewerblich": {"Messe Autohaus": {"link":"#", "desc":"Autohaus-Promotion"}, "Eröffnung": {"link":"#", "desc":"Geschäftseröffnungen"}},
+  "Agenturen / Wiederverkäufer": {"Promotion / Subbrand": {"link":"#", "desc":"White-Label- & Partner-Einsätze"}},
+  "Allgemein": {"Coffee-Car Flotte": {"link":"#", "desc":"Übersicht Fahrzeuge"}}
 };
 
+const state = {
+  date_start: "", date_end: "", location: "",
+  available: false, availabilityDiscount: 0,
+  segment: "", priority: "",
+  refCategory: "", refSub: "",
+  guests: 80, start_time: "09:00", end_time: "13:00",
+  addons: { waffles:false, frozencap:false, softice:false, milkschaum:false },
+  price: null
+};
+
+function $(id){ return document.getElementById(id); }
+function setActive(step){ [1,2,3,4,5,6].forEach(n => $('s'+n).classList.toggle('active', n <= step)); }
+function showStep(n){ ['step1','step2','step3','step4','step5','step6'].forEach((id,i)=>{ $(id).classList.toggle('hidden', (i+1)!==n); }); setActive(n); updateSummary(); }
+function daysBetween(start,end){ const s=new Date(start); const e=end?new Date(end):new Date(start); if(isNaN(s)) return 0; if(isNaN(e)) return 1; const ms=(Date.UTC(e.getFullYear(),e.getMonth(),e.getDate())-Date.UTC(s.getFullYear(),s.getMonth(),s.getDate())); return Math.floor(ms/86400000)+1; }
+function formatEUR(v){ return new Intl.NumberFormat('de-DE',{ style:'currency', currency:'EUR'}).format(v); }
+function simulateAvailability(){ const r=Math.random(); if(r<0.20) return 0.15; else if(r<0.65) return 0.10; return 0.00; }
+function updateSummary(){
+  const d1=state.date_start||'–', d2=state.date_end||state.date_start||'–';
+  const days=daysBetween(state.date_start,state.date_end);
+  const seg=state.segment||'–', pr=state.priority||'–';
+  const disc=state.availabilityDiscount>0? Math.round(state.availabilityDiscount*100)+'% Frühbucher-Rabatt':'kein Rabatt';
+  const html=`
+    <div class="badge">Termin: <strong>${d1}</strong> bis <strong>${d2}</strong> (${days} Tag/e)</div>
+    <div style="margin-top:6px" class="badge">Ort: <strong>${state.location||'–'}</strong></div>
+    <div style="margin-top:6px" class="badge">Segment: <strong>${seg}</strong></div>
+    <div style="margin-top:6px" class="badge">Wichtig: <strong>${pr}</strong></div>
+    <div style="margin-top:6px" class="badge">Verfügbarkeit: <strong>${state.available? 'verfügbar' : 'unbekannt'}</strong> / Rabatt: <strong>${disc}</strong></div>
+  `;
+  $('summary').innerHTML=html;
+  document.body.classList.toggle('dark', ['Gewerblich','Agenturen / Wiederverkäufer'].includes(state.segment));
+}
+
+// Step 1
+$('checkAvail').addEventListener('click', ()=>{
+  state.date_start = $('date_start').value;
+  state.date_end = $('date_end').value;
+  state.location = $('location').value.trim();
+  if(!state.date_start || !state.location) {
+    $('availInfo').className='info warn'; $('availInfo').textContent='Bitte Datum und Ort/PLZ angeben.'; $('availInfo').classList.remove('hidden'); return;
+  }
+  $('availInfo').className='info'; $('availInfo').innerHTML='⏳ Wir prüfen die Verfügbarkeit … bitte einen Moment.'; $('availInfo').classList.remove('hidden');
+  setTimeout(()=>{
+    const disc = simulateAvailability();
+    state.available = true;
+    state.availabilityDiscount = disc;
+    $('availInfo').className='info ok';
+    $('availInfo').innerHTML = disc>0 ? 
+      `✅ Gute Nachrichten: Wir haben Kapazitäten! Sie sparen <strong>${Math.round(disc*100)}%</strong> bei Buchung innerhalb der nächsten 48h.`
+      : `✅ Termin verfügbar. Für diesen Tag sind aktuell <strong>keine zusätzlichen Rabatte</strong> vorgesehen.`;
+    updateSummary();
+    showStep(2);
+  }, 900);
+});
+
+// Step 2
+$('back2').addEventListener('click', ()=> showStep(1));
+$('next2').addEventListener('click', ()=>{
+  const val = [...document.querySelectorAll('input[name="segment"]')].find(r=>r.checked)?.value;
+  if(!val) return alert('Bitte Segment wählen.');
+  state.segment = val;
+  updateSummary();
+  const cats = Object.keys(REF_MAP);
+  const selCat = $('refCategory');
+  selCat.innerHTML = '';
+  cats.forEach(c=>{ const o=document.createElement('option'); o.value=c; o.textContent=c; selCat.appendChild(o); });
+  if(cats.includes(val)) selCat.value = val;
+  fillSubcategories();
+  showStep(3);
+});
+
+// Step 3
+function fillSubcategories(){
+  const cat = $('refCategory').value;
+  const subs = Object.keys(REF_MAP[cat]||{});
+  const sel = $('refSub'); sel.innerHTML = '';
+  subs.forEach(s=>{ const o=document.createElement('option'); o.value=s; o.textContent=s; sel.appendChild(o); });
+  renderRefs();
+}
+$('back3').addEventListener('click', ()=> showStep(2));
+$('next3').addEventListener('click', ()=>{
+  const val = [...document.querySelectorAll('input[name="priority"]')].find(r=>r.checked)?.value;
+  if(!val) return alert('Bitte wählen Sie, was Ihnen wichtig ist.');
+  state.priority = val;
+  updateSummary();
+  showStep(4);
+});
+
+// Step 4
+$('refCategory').addEventListener('change', fillSubcategories);
+$('refSub').addEventListener('change', renderRefs);
+function renderRefs(){
+  const cat = $('refCategory').value;
+  const sub = $('refSub').value;
+  state.refCategory = cat; state.refSub = sub;
+  const grid = $('refGrid'); grid.innerHTML='';
+  if(!cat || !sub || !REF_MAP[cat] || !REF_MAP[cat][sub]) return;
+  const item = REF_MAP[cat][sub];
+  const link = item.link || '#';
+  const desc = item.desc || '';
+  const card = document.createElement('div'); card.className='ref-card';
+  card.innerHTML = `<h4>${cat} → ${sub}</h4><p>${desc}</p>
+    <div class="ref-actions">
+      <a class="btn-ghost" href="${link}" target="_blank" rel="noopener">Ordner öffnen</a>
+    </div>`;
+  grid.appendChild(card);
+}
+$('back4').addEventListener('click', ()=> showStep(3));
+$('next4').addEventListener('click', ()=> showStep(5));
+
+// Step 5
+$('back5').addEventListener('click', ()=> showStep(4));
+
+function customerTypeForSegment(seg){
+  if (seg === 'Privat') return 'Privat';
+  return 'Gewerblich';
+}
+
+$('calc').addEventListener('click', async ()=>{
+  state.guests = parseInt($('guests').value||'0',10);
+  const st = $('start_time').value, et=$('end_time').value;
+  state.start_time = st; state.end_time = et;
+  state.addons.waffles = $('waffles_on').checked;
+  state.addons.frozencap = $('frozencap_on').checked;
+  state.addons.softice = $('softice_on').checked;
+  state.addons.milkschaum = $('milkschaum_on').checked;
+
+  const hrs = (()=>{ 
+    const [h1,m1]=st.split(':').map(Number); const [h2,m2]=et.split(':').map(Number);
+    if(isNaN(h1)||isNaN(h2)) return 4;
+    return Math.max(1, (h2*60+m2 - (h1*60+m1))/60);
+  })();
+  const days = daysBetween(state.date_start, state.date_end);
+
+  const params = new URLSearchParams({
+    date_start: state.date_start,
+    date_end: state.date_end,
+    start_time: state.start_time,
+    end_time: state.end_time,
+    guests: String(state.guests),
+    customer_type: customerTypeForSegment(state.segment),
+    event_type: state.priority || 'Sonstige',
+    cupType: $('cupType').value,
+    waffles_on: state.addons.waffles?'1':'0',
+    frozencap_on: state.addons.frozencap?'1':'0',
+    softice_on: state.addons.softice?'1':'0',
+    milkschaum_on: state.addons.milkschaum?'1':'0'
+  });
+
+  const out = $('priceOut'); out.classList.remove('hidden'); out.textContent = '⏳ Preis wird berechnet …';
+  let base = 0;
+  try {
+    const r = await fetch(`${API}?${params.toString()}`);
+    const j = await r.json();
+    if(j && j.ok && j.result && j.result.price){
+      base = normalizePriceNumber(j.result.price);
+    }
+  } catch(e) { /* fallback below */ }
+
+  if (base <= 0){
+    base = 700 + Math.max(0, state.guests-50)*3 + hrs*90;
+    if(state.addons.waffles) base += 180;
+    if(state.addons.frozencap) base += 160;
+    if(state.addons.softice) base += 220;
+    if(state.addons.milkschaum) base += 140;
+  }
+
+  const availDisc = state.availabilityDiscount; // 0, .10, .15
+  let dayDisc = 0;
+  if(days===2) dayDisc = 0.20;
+  if(days>=3) dayDisc = 0.25;
+
+  const afterAvail = base * (1 - availDisc);
+  const afterDays = afterAvail * (1 - dayDisc);
+  const final = Math.round(afterDays);
+
+  state.price = { base, afterAvail, afterDays, final, availDisc, dayDisc, hrs, days };
+
+  out.innerHTML = `
+    <div><strong>Preisvorschlag:</strong> ${formatEUR(final)}</div>
+    <div class="muted">
+      Basis: ${formatEUR(base)} • Verfügbarkeit: −${Math.round(availDisc*100)}% • Mehrtägig: −${Math.round(dayDisc*100)}% • Dauer: ${hrs} h
+    </div>
+  `;
+  showStep(6);
+});
+
+// Step 6
+$('back6').addEventListener('click', ()=> showStep(5));
+(function(){
+  const sendBtn = $('sendLead');
+  const consent = $('consent');
+  function update(){ sendBtn.disabled = !consent.checked; }
+  consent.addEventListener('change', update);
+  update();
+})();
+
+$('sendLead').addEventListener('click', async ()=>{
+  const name=$('lead_name').value.trim(), email=$('lead_email').value.trim(), phone=$('lead_phone').value.trim();
+  if(!name || !email) return alert('Bitte Name und E‑Mail angeben.');
+  const params = new URLSearchParams({
+    mode:'lead',
+    name, email, phone,
+    date_start: state.date_start, date_end: state.date_end, location: state.location,
+    segment: state.segment, priority: state.priority,
+    ref_cat: state.refCategory, ref_sub: state.refSub,
+    guests: state.guests, start_time: state.start_time, end_time: state.end_time,
+    waffles_on: state.addons.waffles?'1':'0',
+    frozencap_on: state.addons.frozencap?'1':'0',
+    softice_on: state.addons.softice?'1':'0',
+    milkschaum_on: state.addons.milkschaum?'1':'0',
+    price_final: state.price? state.price.final : '',
+    price_base: state.price? state.price.base : ''
+  });
+  const box=$('leadMsg'); box.classList.remove('hidden'); box.className='info'; box.textContent='⏳ Sende Anfrage …';
+  try{
+    const r = await fetch(`${API}?${params.toString()}`);
+    const j = await r.json();
+    if(j.ok){
+      box.className='info ok'; box.innerHTML='✅ Danke! Wir melden uns kurzfristig mit einem Angebot.';
+    } else {
+      box.className='info warn'; box.innerHTML='⚠️ Konnte nicht gesendet werden: '+(j.error||'Unbekannter Fehler');
+    }
+  }catch(e){
+    box.className='info warn'; box.textContent='⚠️ Netzwerkfehler: '+e.message;
+  }
+});
+
+(function init(){
+  $('date_start').valueAsDate = new Date();
+  setActive(1);
+})();
+
+
+// ===== Sync start & end date =====
+(function() {
+  const start = document.getElementById('date_start');
+  const end = document.getElementById('date_end');
+
+  function syncEnd() {
+    if (!start || !end) return;
+    if (!start.value) return;
+    // Wenn Enddatum leer oder kleiner als Start → anpassen
+    if (!end.value || end.value < start.value) {
+      end.value = start.value;
+    }
+    end.min = start.value; // Kein Datum vor dem Start erlaubt
+  }
+
+  if (start) start.addEventListener('change', syncEnd);
+  if (end) end.addEventListener('change', () => {
+    if (end.value && start.value && end.value < start.value) {
+      alert('Das Enddatum darf nicht vor dem Startdatum liegen.');
+      end.value = start.value;
+    }
+  });
+
+  // Beim Laden direkt setzen
+  document.addEventListener('DOMContentLoaded', syncEnd);
+})();
+
+
+
+// ===== Robust sync for start/end date (v2) =====
+(function() {
+  const start = document.getElementById('date_start');
+  const end = document.getElementById('date_end');
+  if (!start || !end) return;
+
+  function ensureDefaults() {
+    // Set start = today if empty
+    if (!start.value) {
+      const today = new Date();
+      start.valueAsDate = today;
+    }
+    // Align end to start if empty or earlier
+    if (!end.value || end.value < start.value) {
+      end.value = start.value;
+    }
+    end.min = start.value;
+  }
+
+  function onStartChange() {
+    if (!start.value) return;
+    if (!end.value || end.value < start.value) {
+      end.value = start.value;
+    }
+    end.min = start.value;
+  }
+
+  function onEndChange() {
+    if (end.value && start.value && end.value < start.value) {
+      end.value = start.value;
+    }
+  }
+
+  // Init now
+  ensureDefaults();
+
+  // Also run after the rest of init
+  document.addEventListener('DOMContentLoaded', ensureDefaults);
+
+  start.addEventListener('input', onStartChange);
+  start.addEventListener('change', onStartChange);
+  end.addEventListener('input', onEndChange);
+  end.addEventListener('change', onEndChange);
+})();
+
+
+
+// --- Fancy segment cards ---
+(function(){
+  const grid = document.getElementById('segmentGrid');
+  if(!grid) return;
+  const cards = grid.querySelectorAll('.segment-card');
+  cards.forEach(card=>{
+    card.addEventListener('click', ()=>{
+      cards.forEach(c=>c.classList.remove('active'));
+      card.classList.add('active');
+      state.segment = card.dataset.value;
+      updateSummary();
+    });
+  });
+
+  // Override "Weiter" handler for Step 2 to use state.segment
+  (function(){
+    const oldBtn = document.getElementById('next2');
+    const btn = oldBtn.cloneNode(true);
+    oldBtn.replaceWith(btn);
+    btn.addEventListener('click', ()=>{
+      if(!state.segment){
+        alert('Bitte Segment wählen.');
+        return;
+      }
+      // Prefill references based on segment
+      const cats = Object.keys(REF_MAP);
+      const selCat = document.getElementById('refCategory');
+      selCat.innerHTML = '';
+      cats.forEach(c=>{ const o=document.createElement('option'); o.value=c; o.textContent=c; selCat.appendChild(o); });
+      if(cats.includes(state.segment)) selCat.value = state.segment;
+      // Fill subs & go next
+      if (typeof fillSubcategories === 'function') fillSubcategories();
+      showStep(3);
+    });
+  })();
+})();
+
+
+
+// --- Multi-select priority cards (Step 3) ---
+(function(){
+  // ensure state.priorities exists
+  if (!Array.isArray(state.priorities)) state.priorities = [];
+  const grid = document.getElementById('priorityGrid');
+  if(grid){
+    const cards = grid.querySelectorAll('.choice-card');
+    cards.forEach(card=>{
+      card.addEventListener('click', ()=>{
+        const val = card.dataset.value;
+        const idx = state.priorities.indexOf(val);
+        if(idx >= 0){
+          // remove
+          state.priorities.splice(idx,1);
+          card.classList.remove('active');
+        }else{
+          // add
+          state.priorities.push(val);
+          card.classList.add('active');
+        }
+        updateSummary();
+      });
+    });
+  }
+
+  // Override "Weiter" (step3) to require at least one selection
+  (function(){
+    const oldBtn = document.getElementById('next3');
+    const btn = oldBtn.cloneNode(true);
+    oldBtn.replaceWith(btn);
+    btn.addEventListener('click', ()=>{
+      if(!state.priorities || state.priorities.length === 0){
+        alert('Bitte wählen Sie mindestens eine Priorität.');
+        return;
+      }
+      showStep(4);
+    });
+  })();
+})();
+
+// --- Patch summary to show priorities list
+(function(){
+  const oldUpdate = updateSummary;
+  updateSummary = function(){
+    oldUpdate();
+    // replace "Wichtig" badge to show joined list
+    const pr = (state.priorities && state.priorities.length) ? state.priorities.join(', ') : (state.priority || '–');
+    const summary = document.getElementById('summary');
+    if(summary){
+      // rebuild with the existing HTML but swap the "Wichtig" line
+      const d1 = state.date_start || '–';
+      const d2 = state.date_end || state.date_start || '–';
+      const days = (function(s,e){ const sd=new Date(s); const ed=e?new Date(e):new Date(s); if(isNaN(sd)) return 0; if(isNaN(ed)) return 1; const ms=(Date.UTC(ed.getFullYear(),ed.getMonth(),ed.getDate())-Date.UTC(sd.getFullYear(),sd.getMonth(),sd.getDate())); return Math.floor(ms/86400000)+1; })(state.date_start,state.date_end);
+      const seg = state.segment || '–';
+      const disc = state.availabilityDiscount>0? Math.round(state.availabilityDiscount*100)+'% Frühbucher-Rabatt':'kein Rabatt';
+      summary.innerHTML = `
+        <div class="badge">Termin: <strong>${d1}</strong> bis <strong>${d2}</strong> (${days} Tag/e)</div>
+        <div style="margin-top:6px" class="badge">Ort: <strong>${state.location||'–'}</strong></div>
+        <div style="margin-top:6px" class="badge">Segment: <strong>${seg}</strong></div>
+        <div style="margin-top:6px" class="badge">Wichtig: <strong>${pr}</strong></div>
+        <div style="margin-top:6px" class="badge">Verfügbarkeit: <strong>${state.available? 'verfügbar' : 'unbekannt'}</strong> / Rabatt: <strong>${disc}</strong></div>
+      `;
+    }
+  };
+})();
+
+// --- Patch calc & lead to pass priorities (first for event_type, joined for metadata)
+(function(){
+  // override calc button handler
+  const oldCalc = document.getElementById('calc');
+  if(oldCalc){
+    const btn = oldCalc.cloneNode(true);
+    oldCalc.replaceWith(btn);
+    btn.addEventListener('click', async ()=>{
+      state.guests = parseInt(document.getElementById('guests').value||'0',10);
+      const st = document.getElementById('start_time').value, et=document.getElementById('end_time').value;
+      state.start_time = st; state.end_time = et;
+      state.addons.waffles = document.getElementById('waffles_on').checked;
+      state.addons.frozencap = document.getElementById('frozencap_on').checked;
+      state.addons.softice = document.getElementById('softice_on').checked;
+      state.addons.milkschaum = document.getElementById('milkschaum_on').checked;
+
+      const hrs = (function(){ const [h1,m1]=st.split(':').map(Number); const [h2,m2]=et.split(':').map(Number); if(isNaN(h1)||isNaN(h2)) return 4; return Math.max(1, (h2*60+m2 - (h1*60+m1))/60); })();
+      const days = (function(start,end){ const s=new Date(start); const e=end?new Date(end):new Date(start); if(isNaN(s)) return 0; if(isNaN(e)) return 1; const ms=(Date.UTC(e.getFullYear(),e.getMonth(),e.getDate())-Date.UTC(s.getFullYear(),s.getMonth(),s.getDate())); return Math.floor(ms/86400000)+1; })(state.date_start,state.date_end);
+
+      const prioritiesJoined = (state.priorities && state.priorities.length) ? state.priorities.join(', ') : (state.priority || '');
+      const eventTypeForAPI = (state.priorities && state.priorities.length) ? state.priorities[0] : (state.priority || 'Sonstige');
+
+      const params = new URLSearchParams({
+        date_start: state.date_start,
+        date_end: state.date_end,
+        start_time: state.start_time,
+        end_time: state.end_time,
+        guests: String(state.guests),
+        customer_type: (state.segment==='Privat')?'Privat':'Gewerblich',
+        event_type: eventTypeForAPI,
+        cupType: document.getElementById('cupType').value,
+        waffles_on: state.addons.waffles?'1':'0',
+        frozencap_on: state.addons.frozencap?'1':'0',
+        softice_on: state.addons.softice?'1':'0',
+        milkschaum_on: state.addons.milkschaum?'1':'0'
+      });
+
+      const out = document.getElementById('priceOut'); out.classList.remove('hidden'); out.textContent = '⏳ Preis wird berechnet …';
+      let base = 0;
+      try {
+        const r = await fetch(`${API}?${params.toString()}`);
+        const j = await r.json();
+        if(j && j.ok && j.result && j.result.price){
+          const num = String(j.result.price).replace(/[^0-9,.-]/g,'').replace(/\./g,'').replace(',', '.');
+          base = parseFloat(num);
+          if (isNaN(base)) base = 0;
+        }
+      } catch(e) { /* fallback below */ }
+
+      if (base <= 0){
+        base = 700 + Math.max(0, state.guests-50)*3 + hrs*90;
+        if(state.addons.waffles) base += 180;
+        if(state.addons.frozencap) base += 160;
+        if(state.addons.softice) base += 220;
+        if(state.addons.milkschaum) base += 140;
+      }
+
+      const availDisc = state.availabilityDiscount; 
+      let dayDisc = 0; if(days===2) dayDisc = 0.20; if(days>=3) dayDisc = 0.25;
+      const afterAvail = base * (1 - availDisc);
+      const afterDays = afterAvail * (1 - dayDisc);
+      const final = Math.round(afterDays);
+      state.price = { base, afterAvail, afterDays, final, availDisc, dayDisc, hrs, days };
+
+      out.innerHTML = `
+        <div><strong>Preisvorschlag:</strong> ${new Intl.NumberFormat('de-DE',{ style:'currency', currency:'EUR'}).format(final)}</div>
+        <div class="muted">
+          Basis: ${new Intl.NumberFormat('de-DE',{ style:'currency', currency:'EUR'}).format(base)} • Verfügbarkeit: −${Math.round(availDisc*100)}% • Mehrtägig: −${Math.round(dayDisc*100)}% • Dauer: ${hrs} h
+        </div>
+      `;
+      showStep(6);
+    });
+  }
+  // augment lead to include prioritiesJoined
+  const sendBtn = document.getElementById('sendLead');
+  if(sendBtn){
+    const oldHandler = sendBtn.onclick;
+    sendBtn.replaceWith((function(orig){
+      const btn = orig.cloneNode(true);
+      btn.addEventListener('click', async ()=>{
+        const name=document.getElementById('lead_name').value.trim(), email=document.getElementById('lead_email').value.trim(), phone=document.getElementById('lead_phone').value.trim();
+        if(!name || !email) return alert('Bitte Name und E‑Mail angeben.');
+        const prioritiesJoined = (state.priorities && state.priorities.length) ? state.priorities.join(', ') : (state.priority || '');
+        const params = new URLSearchParams({
+          mode:'lead', name, email, phone,
+          date_start: state.date_start, date_end: state.date_end, location: state.location,
+          segment: state.segment, priority: prioritiesJoined,
+          ref_cat: state.refCategory, ref_sub: state.refSub,
+          guests: state.guests, start_time: state.start_time, end_time: state.end_time,
+          waffles_on: state.addons.waffles?'1':'0',
+          frozencap_on: state.addons.frozencap?'1':'0',
+          softice_on: state.addons.softice?'1':'0',
+          milkschaum_on: state.addons.milkschaum?'1':'0',
+          price_final: state.price? state.price.final : '',
+          price_base: state.price? state.price.base : ''
+        });
+        const box=document.getElementById('leadMsg'); box.classList.remove('hidden'); box.className='info'; box.textContent='⏳ Sende Anfrage …';
+        try{
+          const r = await fetch(`${API}?${params.toString()}`);
+          const j = await r.json();
+          if(j.ok){ box.className='info ok'; box.innerHTML='✅ Danke! Wir melden uns kurzfristig mit einem Angebot.'; }
+          else{ box.className='info warn'; box.innerHTML='⚠️ Konnte nicht gesendet werden: '+(j.error||'Unbekannter Fehler'); }
+        }catch(e){ box.className='info warn'; box.textContent='⚠️ Netzwerkfehler: '+e.message; }
+      });
+      return btn;
+    })(sendBtn));
+  }
+})();
+
+
+
+// --- Step 5 addon card toggles ---
+(function(){
+  const grid = document.getElementById('addonsGrid');
+  if(!grid) return;
+  grid.querySelectorAll('.addon-card').forEach(card=>{
+    const id = card.dataset.toggle;
+    const hidden = document.getElementById(id);
+    const sw = document.getElementById(id + '_switch');
+    function sync(){
+      if(hidden.checked){
+        card.classList.add('active'); sw.classList.add('on');
+      }else{
+        card.classList.remove('active'); sw.classList.remove('on');
+      }
+    }
+    card.addEventListener('click', ()=>{
+      hidden.checked = !hidden.checked;
+      sync();
+    });
+    sync();
+  });
+})();
+
+
+
+// --- Normalize price number from API (handles 2.080,00 €, 208.000,00 €, etc.) ---
+function normalizePriceNumber(raw){
+  if(raw == null) return 0;
+  let s = String(raw).trim();
+  const original = s;
+  s = s.replace(/[^0-9,.-]/g,'').trim();
+  if (/\d{1,3}(\.\d{3})+,\d{2}$/.test(s)) {
+    s = s.replace(/\./g, '').replace(',', '.');
+  } else if (/\d+,\d{2}$/.test(s)) {
+    s = s.replace(',', '.');
+  } else if (/\d+\.\d{2}$/.test(s)) {
+    // ok
+  } else {
+    const lastComma = s.lastIndexOf(',');
+    if (lastComma !== -1) {
+      s = s.slice(0,lastComma).replace(/\./g,'') + '.' + s.slice(lastComma+1);
+    } else {
+      s = s.replace(/\./g,'');
+    }
+  }
+  let num = parseFloat(s);
+  if (!isFinite(num) || isNaN(num)) num = 0;
+  if (num > 20000) num = num / 100;
+  return num;
+}
+
+
+// === Price normalizer (cents-based)
+function normalizePriceNumber(raw){
+  if(raw == null) return 0;
+  const digits = String(raw).replace(/\D/g,'');
+  if(digits.length >= 3){
+    return parseInt(digits.slice(0,-2),10) + parseInt(digits.slice(-2),10)/100;
+  }
+  let s = String(raw).replace(/[^0-9,.-]/g,'').trim();
+  if (/^\d{1,3}(\.\d{3})+,\d{2}$/.test(s)) s = s.replace(/\./g,'').replace(',', '.');
+  else if (/^\d+,\d{2}$/.test(s)) s = s.replace(',', '.');
+  else if (/^\d+\.\d{2}$/.test(s)) {/*ok*/}
+  else { const last=s.lastIndexOf(','); if(last!==-1) s=s.slice(0,last).replace(/\./g,'')+'.'+s.slice(last+1); else s=s.replace(/\./g,''); }
+  let num=parseFloat(s); if(!isFinite(num)||isNaN(num)) num=0; if(num>20000) num=num/100; return num;
+}
+
+// === Multi-day time rows
 function enumerateDates(startStr, endStr){
-  const out=[]; if(!startStr) return out;
-  const start=new Date(startStr); const end=endStr?new Date(endStr):new Date(start);
-  let d=new Date(Date.UTC(start.getFullYear(),start.getMonth(),start.getDate()));
+  if(!startStr) return [];
+  const start=new Date(startStr); const end=endStr?new Date(endStr):new Date(startStr);
+  const out=[]; let d=new Date(Date.UTC(start.getFullYear(),start.getMonth(),start.getDate()));
   const endUTC=Date.UTC(end.getFullYear(),end.getMonth(),end.getDate());
   while(d.getTime()<=endUTC){ out.push(new Date(d)); d.setUTCDate(d.getUTCDate()+1) }
   return out;
 }
 function fmtISO(d){ const y=d.getUTCFullYear(), m=String(d.getUTCMonth()+1).padStart(2,'0'), da=String(d.getUTCDate()).padStart(2,'0'); return `${y}-${m}-${da}`; }
-
-function rebuildDayRows(){
-  const ds=document.getElementById('date_start').value;
-  const de=document.getElementById('date_end').value||ds;
-  const st=document.getElementById('start_time').value||'09:00';
-  const et=document.getElementById('end_time').value||'13:00';
-  const dates=enumerateDates(ds,de);
-  const card=document.getElementById('daysCard');
-  const info=document.getElementById('multiInfo');
-  const cont=document.getElementById('daysContainer'); cont.innerHTML='';
-  if(dates.length<=1){card.style.display='none'; info.style.display='none'; return;}
-  card.style.display=''; info.style.display='';
+function rebuildDayTimes(){
+  const grid = document.getElementById('dayTimesGrid');
+  const card = document.getElementById('dayTimesCard');
+  if(!grid||!card) return;
+  const dates = enumerateDates(state.date_start, state.date_end);
+  grid.innerHTML='';
+  if(dates.length<=1){ card.style.display='none'; return; }
+  card.style.display='';
+  const st = document.getElementById('start_time').value || '09:00';
+  const et = document.getElementById('end_time').value || '13:00';
   dates.forEach(d=>{
-    const div=document.createElement('div'); div.className='row';
-    const dateISO=fmtISO(d);
-    div.innerHTML=`<div><label class="muted">Datum</label><input type="date" value="${dateISO}" data-role="date"></div>
-                   <div><label class="muted">Start</label><input type="time" value="${st}" data-role="start"></div>
-                   <div><label class="muted">Ende</label><input type="time" value="${et}" data-role="end"></div>`;
-    cont.appendChild(div);
+    const row = document.createElement('div'); row.className='daytimes-grid';
+    row.innerHTML = `
+      <div class="cell"><label>Datum</label><input type="date" value="${fmtISO(d)}" data-role="date"></div>
+      <div class="cell"><label>Beginn</label><input type="time" value="${st}" data-role="start"></div>
+      <div class="cell"><label>Ende</label><input type="time" value="${et}" data-role="end"></div>`;
+    grid.appendChild(row);
   });
 }
-
-function toggleB2B(){
-  const ct=document.getElementById('customer_type').value;
-  document.getElementById('b2bBlock').parentElement.style.display=(ct==='Gewerblich')?'':'none';
-  refreshEventTypes();
-}
-function refreshEventTypes(){
-  const ct=document.getElementById('customer_type').value||'Privat';
-  const sel=document.getElementById('event_type'); const other=document.getElementById('event_type_other');
-  sel.innerHTML=''; (EVENT_OPTIONS[ct]||[]).forEach(v=>{ const o=document.createElement('option'); o.value=v; o.textContent=v; sel.appendChild(o); });
-  other.style.display=(sel.value==='Sonstige')?'':'none';
-}
-
-document.getElementById('customer_type').addEventListener('change', toggleB2B);
-document.addEventListener('change', (e)=>{
-  if(e.target && e.target.id==='event_type'){
-    document.getElementById('event_type_other').style.display=(e.target.value==='Sonstige')?'':'none';
+function calcTotalHours(){
+  const grid = document.getElementById('dayTimesGrid');
+  if(!grid || grid.children.length===0){
+    const st = document.getElementById('start_time').value, et = document.getElementById('end_time').value;
+    const [h1,m1]=(st||'09:00').split(':').map(Number); const [h2,m2]=(et||'13:00').split(':').map(Number);
+    return Math.max(1, ((h2*60+m2)-(h1*60+m1))/60);
   }
-});
-
-document.getElementById('date_start').valueAsDate=new Date();
-document.getElementById('date_end').value='';
-toggleB2B(); rebuildDayRows();
-['date_start','date_end','start_time','end_time'].forEach(id=>document.getElementById(id).addEventListener('change', rebuildDayRows));
-
-async function calculate(){
-  const cont=document.getElementById('daysContainer');
-  const rows=Array.from(cont.querySelectorAll('.row'));
-  const dayTimes=rows.map(row=>({date:row.querySelector('[data-role="date"]').value,start:row.querySelector('[data-role="start"]').value,end:row.querySelector('[data-role="end"]').value}));
-  const evType=(document.getElementById('event_type').value==='Sonstige'? (document.getElementById('event_type_other').value||'Sonstige') : document.getElementById('event_type').value);
-
-  const params=new URLSearchParams({
-    date_start:document.getElementById('date_start').value,
-    date_end:document.getElementById('date_end').value,
-    start_time:document.getElementById('start_time').value,
-    end_time:document.getElementById('end_time').value,
-    guests:document.getElementById('guests').value,
-    customer_type:document.getElementById('customer_type').value,
-    event_type:evType,
-    cupType:document.getElementById('cupType').value,
-    waffles_on:document.getElementById('waffles_on').checked?'1':'0',
-    frozencap_on:document.getElementById('frozencap_on').checked?'1':'0',
-    softice_on:document.getElementById('softice_on').checked?'1':'0',
-    milkschaum_on:document.getElementById('milkschaum_on').checked?'1':'0',
-    branding_setup_on:document.getElementById('branding_setup_on').checked?'1':'0',
-    branding_becher_on:document.getElementById('branding_becher_on').checked?'1':'0',
-    day_times:JSON.stringify(dayTimes)
+  let total=0;
+  grid.querySelectorAll('.daytimes-grid').forEach(row=>{
+    const st = row.querySelector('[data-role="start"]').value;
+    const et = row.querySelector('[data-role="end"]').value;
+    const [h1,m1]=(st||'09:00').split(':').map(Number); const [h2,m2]=(et||'13:00').split(':').map(Number);
+    total += Math.max(1, ((h2*60+m2)-(h1*60+m1))/60);
   });
-
-  const resBox=document.getElementById('res');
-  resBox.textContent='Rechne …';
-  try{
-    const r=await fetch(`${API}?${params.toString()}`,{method:'GET'});
-    const j=await r.json();
-    if(!j.ok) throw new Error(j.error||'Unbekannter Fehler');
-    const ct=document.getElementById('customer_type').value;
-    resBox.textContent=`Preis (${ct}): ${j.result.price} — Wochentag: ${j.result.weekday}`;
-  }catch(e){ resBox.textContent='Fehler: '+e.message; }
+  return total;
 }
-document.getElementById('calc').addEventListener('click', calculate);
 
-document.getElementById('reset').addEventListener('click', ()=>{
-  document.getElementById('waffles_on').checked=false;
-  document.getElementById('frozencap_on').checked=false;
-  document.getElementById('softice_on').checked=false;
-  document.getElementById('milkschaum_on').checked=false;
-  document.getElementById('branding_setup_on').checked=false;
-  document.getElementById('branding_becher_on').checked=false;
-  document.getElementById('cupType').selectedIndex=0;
-  document.getElementById('customer_type').selectedIndex=0;
-  document.getElementById('res').textContent='Noch kein Ergebnis.';
-  toggleB2B(); refreshEventTypes();
-});
+// rebuild rows on date change and when entering step 5
+document.getElementById('date_start')?.addEventListener('change', rebuildDayTimes);
+document.getElementById('date_end')?.addEventListener('change', rebuildDayTimes);
+(function(){
+  const next4 = document.getElementById('next4');
+  if(next4){
+    const btn = next4.cloneNode(true);
+    next4.replaceWith(btn);
+    btn.addEventListener('click', ()=>{ showStep(5); rebuildDayTimes(); });
+  }
+})();
 
-// ====== CTA Lead Form (inline prompt) ======
-function promptLead(){
-  const html=`
-  <div style="display:grid;gap:10px">
-    <div class="row">
-      <div><label>Name</label><input id="lead_name" placeholder="Max Mustermann"></div>
-      <div><label>E‑Mail</label><input id="lead_email" type="email" placeholder="max@firma.de"></div>
-    </div>
-    <div class="row">
-      <div><label>Telefon</label><input id="lead_phone" placeholder="+49 ..."></div>
-      <div><label>Firma (optional)</label><input id="lead_company" placeholder="Firma/Organisation"></div>
-    </div>
-    <div><label>Eventort</label><input id="lead_location" placeholder="Straße, PLZ Ort"></div>
-    <div><label>Bemerkung</label><textarea id="lead_note" placeholder="Besondere Wünsche, Zeitfenster, Zufahrt, ..."></textarea></div>
-    <div style="display:flex;gap:8px;justify-content:flex-end">
-      <button class="btn-ghost" id="lead_cancel">Abbrechen</button>
-      <button class="btn" id="lead_send">Senden</button>
-    </div>
-  </div>`;
-  const dlg=document.createElement('dialog'); dlg.style.width='min(720px,90vw)'; dlg.style.background='#fff'; dlg.style.color='var(--ink)'; dlg.style.border='1px solid var(--line)'; dlg.style.borderRadius='18px'; dlg.innerHTML=html; document.body.appendChild(dlg); dlg.showModal();
-  dlg.querySelector('#lead_cancel').addEventListener('click', ()=>{ dlg.close(); dlg.remove(); });
-  dlg.querySelector('#lead_send').addEventListener('click', async ()=>{
-    const params=new URLSearchParams({
-      mode:'lead',
-      name:document.getElementById('lead_name').value,
-      email:document.getElementById('lead_email').value,
-      phone:document.getElementById('lead_phone').value,
-      company:document.getElementById('lead_company').value,
-      location:document.getElementById('lead_location').value,
-      note:document.getElementById('lead_note').value,
-      // snapshot
-      date_start:document.getElementById('date_start').value,
-      date_end:document.getElementById('date_end').value,
-      start_time:document.getElementById('start_time').value,
-      end_time:document.getElementById('end_time').value,
-      guests:document.getElementById('guests').value,
-      customer_type:document.getElementById('customer_type').value,
-      event_type:(document.getElementById('event_type').value==='Sonstige'? (document.getElementById('event_type_other').value||'Sonstige') : document.getElementById('event_type').value),
-      cupType:document.getElementById('cupType').value,
-      waffles_on:document.getElementById('waffles_on').checked?'1':'0',
-      frozencap_on:document.getElementById('frozencap_on').checked?'1':'0',
-      softice_on:document.getElementById('softice_on').checked?'1':'0',
-      milkschaum_on:document.getElementById('milkschaum_on').checked?'1':'0',
-      branding_setup_on:document.getElementById('branding_setup_on').checked?'1':'0',
-      branding_becher_on:document.getElementById('branding_becher_on').checked?'1':'0'
+// override calc: use total hours + normalized base price
+(function(){
+  const old = document.getElementById('calc');
+  if(!old) return;
+  const btn = old.cloneNode(true);
+  old.replaceWith(btn);
+  btn.addEventListener('click', async ()=>{
+    rebuildDayTimes();
+    const hrs = calcTotalHours();
+    state.guests = parseInt(document.getElementById('guests').value||'0',10);
+    state.start_time = document.getElementById('start_time').value;
+    state.end_time = document.getElementById('end_time').value;
+    state.addons.waffles = document.getElementById('waffles_on').checked;
+    state.addons.frozencap = document.getElementById('frozencap_on').checked;
+    state.addons.softice = document.getElementById('softice_on').checked;
+    state.addons.milkschaum = document.getElementById('milkschaum_on').checked;
+
+    const params = new URLSearchParams({
+      date_start: state.date_start,
+      date_end: state.date_end,
+      start_time: state.start_time,
+      end_time: state.end_time,
+      guests: String(state.guests),
+      customer_type: (state.segment==='Privat')?'Privat':'Gewerblich',
+      event_type: (state.priorities && state.priorities[0]) ? state.priorities[0] : (state.priority || 'Sonstige'),
+      cupType: document.getElementById('cupType').value,
+      waffles_on: state.addons.waffles?'1':'0',
+      frozencap_on: state.addons.frozencap?'1':'0',
+      softice_on: state.addons.softice?'1':'0',
+      milkschaum_on: state.addons.milkschaum?'1':'0'
     });
-    try{
-      const r=await fetch(`${API}?${params.toString()}`,{method:'GET'});
-      const j=await r.json();
-      if(j.ok){ dlg.close(); dlg.remove(); alert('Danke! Wir melden uns kurzfristig mit einem Angebot.'); }
-      else{ alert('Fehler: '+(j.error||'Unbekannt')); }
-    }catch(e){ alert('Fehler: '+e.message); }
+
+    const out = document.getElementById('priceOut'); out.classList.remove('hidden'); out.textContent = '⏳ Preis wird berechnet …';
+    let base = 0;
+    try {
+      const r = await fetch(`${API}?${params.toString()}`);
+      const j = await r.json();
+      if(j && j.ok && j.result && j.result.price){
+        base = normalizePriceNumber(j.result.price);
+      }
+    } catch(e) { /* fallback below */ }
+
+    if (base <= 0){
+      base = 700 + Math.max(0, state.guests-50)*3 + hrs*90;
+      if(state.addons.waffles) base += 180;
+      if(state.addons.frozencap) base += 160;
+      if(state.addons.softice) base += 220;
+      if(state.addons.milkschaum) base += 140;
+    }
+    const days = (function(s,e){ const sd=new Date(s); const ed=e?new Date(e):new Date(s); if(isNaN(sd)) return 1; if(isNaN(ed)) return 1; const ms=(Date.UTC(ed.getFullYear(),ed.getMonth(),ed.getDate())-Date.UTC(sd.getFullYear(),sd.getMonth(),sd.getDate())); return Math.floor(ms/86400000)+1; })(state.date_start,state.date_end);
+    const availDisc = state.availabilityDiscount;
+    let dayDisc = 0; if(days===2) dayDisc = 0.20; if(days>=3) dayDisc = 0.25;
+    const afterAvail = base * (1 - availDisc);
+    const afterDays = afterAvail * (1 - dayDisc);
+    const final = Math.round(afterDays);
+    state.price = { base, afterAvail, afterDays, final, availDisc, dayDisc, hrs, days };
+    out.innerHTML = `
+      <div><strong>Preisvorschlag:</strong> ${new Intl.NumberFormat('de-DE',{ style:'currency', currency:'EUR'}).format(final)}</div>
+      <div class="muted">
+        Basis: ${new Intl.NumberFormat('de-DE',{ style:'currency', currency:'EUR'}).format(base)} • Verfügbarkeit: −${Math.round(availDisc*100)}% • Mehrtägig: −${Math.round(dayDisc*100)}% • Dauer: ${hrs} h
+      </div>`;
+    showStep(6);
   });
-}
-document.getElementById('cta').addEventListener('click', promptLead);
-
-
-// ====== Media Gallery (neuer Abschnitt) ======
-const media = [
-  {src: 'fleet.jpg',  alt: 'Coffee-Car Flotte', caption: 'Coffee-Car Flotte'},
-  {src: 'mercedes.jpg', alt: 'Mercedes Bar', caption: 'Mercedes Setup'},
-  {src: 'ape.jpg', alt: 'Ape Setup', caption: 'Ape Kaffee Setup'}
-];
-function renderMedia(){
-  const grid = document.getElementById('mediaGrid');
-  if(!grid) return;
-  grid.innerHTML = media.map(m => `
-    <div class="media-card">
-      <div class="media-img-wrap">
-        <img src="${m.src}" alt="${m.alt}" loading="lazy">
-      </div>
-      <div class="media-caption">${m.caption}</div>
-    </div>
-  `).join('');
-}
-document.addEventListener('DOMContentLoaded', renderMedia);
-
+})();
 </script>
+
+<!-- ===== Legal Footer (Coffee-Car GmbH) ===== -->
+<style>
+  .cc-footer{font:14px/1.6 Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial;color:var(--ink-soft);margin-top:28px}
+  .cc-footer .wrap{max-width:1100px;margin:0 auto;padding:12px 18px;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between}
+  .cc-footer a{color:var(--accent);text-decoration:none} .cc-footer a:hover{text-decoration:underline}
+  .cc-modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:9999;padding:16px}
+  .cc-card{background:var(--card);max-width:860px;width:100%;border-radius:16px;border:1px solid var(--line);box-shadow:0 10px 30px rgba(0,0,0,.12);overflow:auto;max-height:90vh}
+  .cc-card header{padding:14px 18px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+  .cc-card h3{margin:0;font-size:18px} .cc-card .cc-body{padding:16px 18px}
+  .cc-close{background:none;border:0;font-size:22px;cursor:pointer;line-height:1;color:var(--ink-soft)}
+  body.dark .cc-card{background:#10161c;border-color:#1f2a34;color:#e6eef0}
+  body.dark .cc-card header{border-color:#1f2a34}
+</style>
+
+<footer class="cc-footer" aria-label="Seitenabschluss">
+  <div class="wrap">
+    <div>© <span id="cc-year"></span> Coffee-Car GmbH</div>
+    <nav>
+      <a href="#" data-open="impressum">Impressum</a> ·
+      <a href="#" data-open="datenschutz">Datenschutz</a>
+    </nav>
+  </div>
+</footer>
+
+<!-- Modal: Impressum -->
+<div class="cc-modal" id="modal-impressum" aria-hidden="true">
+  <div class="cc-card" role="dialog" aria-modal="true" aria-labelledby="impressum-title">
+    <header>
+      <h3 id="impressum-title">Impressum</h3>
+      <button class="cc-close" data-close>&times;</button>
+    </header>
+    <div class="cc-body">
+      <p><strong>Coffee-Car GmbH</strong><br>
+      Theodor-Heuss-Allee 112, 60486 Frankfurt am Main, Deutschland</p>
+      <p>E-Mail: <a href="mailto:info@coffee-car.com">info@coffee-car.com</a><br>
+      Telefon: +49 711 219535609</p>
+      <p>Geschäftsführer: <strong>Alkan Kurdes</strong><br>
+      Registergericht: Amtsgericht Frankfurt am Main · HRB 128817<br>
+      USt-ID (§ 27a UStG): <em>wird nachgetragen</em></p>
+      <p>Verantwortlich i.S.d. § 18 Abs. 2 MStV: Alkan Kurdes, Theodor-Heuss-Allee 112, 60486 Frankfurt am Main</p>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Datenschutz -->
+<div class="cc-modal" id="modal-datenschutz" aria-hidden="true">
+  <div class="cc-card" role="dialog" aria-modal="true" aria-labelledby="ds-title">
+    <header>
+      <h3 id="ds-title">Datenschutzerklärung (Kalkulator)</h3>
+      <button class="cc-close" data-close>&times;</button>
+    </header>
+    <div class="cc-body">
+      <p><strong>Verantwortlicher:</strong> Coffee-Car GmbH, Theodor-Heuss-Allee 112, 60486 Frankfurt am Main ·
+      <a href="mailto:info@coffee-car.com">info@coffee-car.com</a> · +49 711 219535609</p>
+      <p><strong>Zwecke/Rechtsgrundlagen:</strong> Bereitstellung des Kalkulators (Art. 6 Abs. 1 lit. f DSGVO) und
+      vorvertragliche Anfragen/Angebote (Art. 6 Abs. 1 lit. b DSGVO).</p>
+      <p><strong>Daten:</strong> Eingaben zur Berechnung (Ort, Datum, Gästezahl, Optionen). Ohne Absenden <u>keine</u> Übertragung.</p>
+      <p><strong>Speicherung im Browser:</strong> Komfortfunktionen (z. B. <code>localStorage</code>), jederzeit durch Nutzer löschbar.</p>
+      <p><strong>Cookies/Tracking:</strong> Keine Analyse-/Marketing-Cookies; keine Dritt-Tracker (sofern nicht ausdrücklich aktiviert).</p>
+      <p><strong>Formular/Anfrage (optional):</strong> Bei Angebotsanfrage Verarbeitung der Kontakt- & Eventdaten (Art. 6 Abs. 1 lit. b).
+      <em>Wenn Versand via Google Apps Script/Sheets: Google als Auftragsverarbeiter (AVV/SCC, Art. 46 DSGVO).</em></p>
+      <p><strong>Weitergabe:</strong> nur wenn erforderlich (IT-Dienstleister) oder gesetzlich.</p>
+      <p><strong>Speicherdauer:</strong> Browserdaten bis Löschung; Anfragen bis Abschluss/Aufbewahrungsfristen.</p>
+      <p><strong>Rechte:</strong> Auskunft, Berichtigung, Löschung, Einschränkung, Datenübertragbarkeit, Widerspruch (Art. 15–21 DSGVO); Widerruf von Einwilligungen.</p>
+      <p><strong>Beschwerde:</strong> HBDI Hessen, Gustav-Stresemann-Ring 1, 65189 Wiesbaden. · <span id="ds-stand"></span></p>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.getElementById('cc-year').textContent = new Date().getFullYear();
+  document.getElementById('ds-stand').textContent = 'Stand: ' + new Date().toLocaleDateString('de-DE');
+  const $ = s => document.querySelector(s), $$ = s => Array.from(document.querySelectorAll(s));
+  const modals = { impressum: document.getElementById('modal-impressum'), datenschutz: document.getElementById('modal-datenschutz') };
+  $$('a[data-open]').forEach(a => a.addEventListener('click', e => { e.preventDefault(); modals[a.dataset.open].style.display='flex'; }));
+  $$('.cc-modal [data-close]').forEach(b => b.addEventListener('click', () => b.closest('.cc-modal').style.display='none'));
+  $$('.cc-modal').forEach(m => m.addEventListener('click', e => { if(e.target===m) m.style.display='none'; }));
+</script>
+<!-- ===== Ende Legal Footer ===== -->
+
 </body>
 </html>
