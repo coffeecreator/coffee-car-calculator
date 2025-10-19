@@ -187,28 +187,58 @@ body.dark .switch { background:#20323a; }
 .daytimes-grid .cell { display:flex; flex-direction:column; }
 .daytimes-grid label { font-weight:600; margin:0 0 6px 0; }
 body.dark .daytimes-card { background:#10161c; border-color:#1f2a34; }
-/* === Dark-mode variable overrides + noside layout === */
-body.dark{
-  --bg:#0b0f14;
-  --card:#0f141a;
-  --line:#1f2a34;
-  --ink:#e6eef0;
-  --ink-soft:#aebcc0;
-  --accent:#8BC4B5;
+
+/* Help FAB & Modal */
+.help-fab{position:fixed;right:18px;bottom:18px;z-index:9998;background:linear-gradient(90deg,var(--mint),var(--mint-strong));color:#083B35;border:1px solid var(--line);border-radius:999px;padding:10px 14px;font-weight:800;cursor:pointer;box-shadow:0 10px 24px rgba(0,0,0,.15)}
+.help-modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:9999;background:rgba(0,0,0,.45);padding:16px}
+.help-card{background:var(--card);color:var(--ink);max-width:820px;width:100%;border:1px solid var(--line);border-radius:16px;overflow:auto;max-height:90vh;box-shadow:0 10px 30px rgba(0,0,0,.2)}
+.help-card header{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:1px solid var(--line)}
+.help-card .body{padding:16px 18px}
+.help-close{background:none;border:0;font-size:22px;cursor:pointer;color:var(--ink-soft)}
+.help-qa details{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:8px 0;background:var(--card)}
+.help-qa summary{cursor:pointer;font-weight:700;color:var(--ink)}
+
+
+/* Theme switch */
+.theme-toggle{display:flex;align-items:center;gap:8px; padding:6px 10px; border:1px solid var(--line);
+  border-radius:999px; background:var(--card); color:var(--ink-soft);}
+.theme-toggle .label{font-weight:700}
+.theme-switch{position:relative;width:46px;height:24px;background:#d7e7e3;border-radius:999px;cursor:pointer;border:1px solid var(--line)}
+.theme-switch::after{content:'';position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:all .2s ease}
+.theme-switch.on{background:var(--mint-strong)}
+.theme-switch.on::after{left:24px}
+
+
+/* === Logo block === */
+.logo-wrap{display:flex;align-items:center;gap:12px}
+.logo-img{height:44px;width:auto;display:block}
+.logo-text{line-height:1;margin:0}
+.logo-text small{display:block;font-size:.9rem;color:var(--ink-soft);font-weight:600;margin-top:2px}
+@media (max-width:640px){
+  .logo-img{height:38px}
+  .logo-text small{font-size:.8rem}
 }
-body.noside .grid2{ grid-template-columns: 1fr; }
-body.noside #sidepanel{ display:none; }
+/* Optional: ensure logo remains readable in dark mode if the PNG is dark */
+body.dark .logo-img.use-invert{filter:brightness(1.08) contrast(1.05)}
+
 </style>
 </head>
 <body>
 <div class="wrap">
 <div class="header">
-<div class="brand"><span class="chip">Chois Coffee</span><h1>Coffee‑Car Buchungs‑Wizard</h1></div>
+<div class="brand">
+  <div class="logo-wrap">
+    <img src="logo_coffee-car-mint.png" alt="Coffee-Car GmbH Logo" class="logo-img use-invert"/>
+    <h1 class="logo-text">
+      Coffee‑Car Buchungs‑Wizard
+      <small>Professional Coffee Catering</small>
+    </h1>
+  </div>
+</div>
 <div class="steps">
 <div class="dot" id="s1"></div><div class="dot" id="s2"></div><div class="dot" id="s3"></div>
-<div class="dot" id="s4"></div><div class="dot" id="s5"></div><div class="dot" id="s6"></div>
+<div class="dot" id="s4" style="display:none"></div><div class="dot" id="s5"></div><div class="dot" id="s6"></div>
 </div>
-<button class="btn-ghost" id="toggleSide" style="padding:8px 12px">Seitenleiste aus</button>
 </div>
 <div class="grid2">
 <div class="card">
@@ -240,7 +270,7 @@ body.noside #sidepanel{ display:none; }
 <button class="btn" id="next3">Weiter</button>
 </div>
 </div>
-<div class="hidden" id="step4">
+<div class="hidden" id="step4" style="display:none">
 <h2>4) Passende Referenzen</h2>
 <p class="muted">Aus über 3.000 Coffee‑Events zeigen wir Ihnen passende Beispiele.</p>
 <div class="row">
@@ -299,10 +329,14 @@ body.noside #sidepanel{ display:none; }
 <div class="info hidden" id="leadMsg"></div>
 </div>
 </div>
-<div class="card" id="sidepanel"><div class="card" id="sidepanel">
+<div class="card">
 <h3>Ihre Angaben</h3>
 <div class="muted" id="summary">
 <div><span class="badge">Noch keine Angaben</span></div>
+</div>
+<div style="margin-top:16px">
+<h3>Hinweis</h3>
+<p class="muted">Wochentags‑Zuschläge sind in der Kalkulation bereits berücksichtigt. Zusätzlich gelten tagesabhängige Rabatte und Mehrtages‑Vorteile.</p>
 </div>
 </div>
 </div>
@@ -402,7 +436,7 @@ $('next3').addEventListener('click', ()=>{
   if(!val) return alert('Bitte wählen Sie, was Ihnen wichtig ist.');
   state.priority = val;
   updateSummary();
-  showStep(4);
+  showStep(5);
 });
 
 // Step 4
@@ -701,7 +735,7 @@ $('sendLead').addEventListener('click', async ()=>{
         alert('Bitte wählen Sie mindestens eine Priorität.');
         return;
       }
-      showStep(4);
+      showStep(5);
     });
   })();
 })();
@@ -959,14 +993,7 @@ function calcTotalHours(){
 // rebuild rows on date change and when entering step 5
 document.getElementById('date_start')?.addEventListener('change', rebuildDayTimes);
 document.getElementById('date_end')?.addEventListener('change', rebuildDayTimes);
-(function(){
-  const next4 = document.getElementById('next4');
-  if(next4){
-    const btn = next4.cloneNode(true);
-    next4.replaceWith(btn);
-    btn.addEventListener('click', ()=>{ showStep(5); rebuildDayTimes(); });
-  }
-})();
+
 
 // override calc: use total hours + normalized base price
 (function(){
@@ -1032,19 +1059,67 @@ document.getElementById('date_end')?.addEventListener('change', rebuildDayTimes)
     showStep(6);
   });
 })();
+</script>
 
-// === Toggle right side panel ===
+<button class="help-fab" id="helpFab">Fragen?</button>
+<div class="help-modal" id="helpModal" aria-hidden="true">
+  <div class="help-card" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+    <header>
+      <h3 id="helpTitle">Fragen & Hilfe</h3>
+      <button class="help-close" id="helpClose" aria-label="Schließen">×</button>
+    </header>
+    <div class="body">
+      <p class="muted">Kurze Antworten rund um Kalkulator, Optionen & Angebot.</p>
+      <div class="help-qa">
+        <details open><summary>Wie aktiviere ich Softeis?</summary>
+          <p>Unter <em>„5) Preis & Optionen“</em> das Add-on „Softeis“ anklicken. Das Bild zeigt Vanille / Schoko / Gemischt.</p>
+        </details>
+        <details><summary>Mehrere Tage erfassen?</summary>
+          <p>Start- & Enddatum setzen. Bei mehreren Tagen erscheint automatisch eine Tagesliste mit Beginn/Ende je Tag.</p>
+        </details>
+        <details><summary>Wie bekomme ich ein Angebot?</summary>
+          <p>Unter „6) Angebot sichern“ Name & E-Mail eintragen, Einwilligung anhaken, senden.</p>
+        </details>
+        <details><summary>Kontakt</summary>
+          <p><a href="mailto:info@coffee-car.com">info@coffee-car.com</a> · +49&nbsp;711&nbsp;219535609</p>
+        </details>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  (function(){
+    const fab=document.getElementById('helpFab');
+    const modal=document.getElementById('helpModal');
+    const close=document.getElementById('helpClose');
+    if(!fab||!modal||!close) return;
+    fab.addEventListener('click',()=> modal.style.display='flex');
+    close.addEventListener('click',()=> modal.style.display='none');
+    modal.addEventListener('click',e=>{ if(e.target===modal) modal.style.display='none'; });
+  })();
+
+// === Theme manager (light/dark with persistence) ===
 (function(){
-  const btn = document.getElementById('toggleSide');
-  const side = document.getElementById('sidepanel');
-  if(!btn || !side) return;
-  function sync(){
-    btn.textContent = document.body.classList.contains('noside') ? 'Seitenleiste an' : 'Seitenleiste aus';
+  const key='cc_theme';
+  const elSwitch = document.getElementById('themeSwitch');
+  const elToggle = document.getElementById('themeToggle');
+  if(!elSwitch||!elToggle) return;
+  function apply(mode){
+    document.body.classList.toggle('dark', mode==='dark');
+    elSwitch.classList.toggle('on', mode==='dark');
+    try{ localStorage.setItem(key, mode); }catch(e){}
   }
-  btn.addEventListener('click', ()=>{ document.body.classList.toggle('noside'); sync(); });
-  sync();
+  function current(){
+    try{ const v=localStorage.getItem(key); if(v==='dark'||v==='light') return v; }catch(e){}
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  apply(current());
+  elToggle.addEventListener('click', ()=>{
+    apply(document.body.classList.contains('dark') ? 'light' : 'dark');
+  });
 })();
 
 </script>
+
 </body>
 </html>
