@@ -310,7 +310,7 @@ body.dark{
 </div>
 <script>
 const API = "https://script.google.com/macros/s/AKfycbw4-wgD6hQFoPHGtbew27ysmR8q0NokxGfV_ym2PKgMi5bt415b-PrtG12tKbUXwCpxeg/exec";
-// === CONFIG: Depots (HQ & Standorte) for distance calc ===
+// === CONFIG: Depots (HQ & Standorte) ===
 const DEPOTS = [
   {name:'Frankfurt (HQ)', lat:50.1109, lng:8.6821},
   {name:'Stuttgart',      lat:48.7758, lng:9.1829},
@@ -319,35 +319,40 @@ const DEPOTS = [
   {name:'Düsseldorf',     lat:51.2277, lng:6.7735},
 ];
 
-// === Helpers: date/geo ===
-function todayISO(){
-  const t = new Date();
-  const y=t.getFullYear(), m=String(t.getMonth()+1).padStart(2,'0'), d=String(t.getDate()).padStart(2,'0');
-  return `${y}-${m}-${d}`;
+// === Helpers ===
+function todayISO(){ const t=new Date(); const y=t.getFullYear(), m=String(t.getMonth()+1).padStart(2,'0'), d=String(t.getDate()).padStart(2,'0'); return `${y}-${m}-${d}`; }
+function isPastDate(iso){ if(!iso) return true; const t=new Date(todayISO()); const d=new Date(iso); return d<t; }
+function haversineKm(a,b){ const R=6371, toRad=x=>x*Math.PI/180, dLat=toRad(b.lat-a.lat), dLng=toRad(b.lng-a.lng), lat1=toRad(a.lat), lat2=toRad(b.lat); const h=Math.sin(dLat/2)**2 + Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLng/2)**2; return 2*R*Math.asin(Math.sqrt(h)); }
+function nearestDepotTo(lat,lng){ const p={lat,lng}; let best=null; DEPOTS.forEach(d=>{ const km=haversineKm(p,d); if(!best||km<best.km) best={depot:d, km}; }); return best; }
+
+// === Places Autocomplete (optional) ===
+state.location_lat = null; state.location_lng = null;
+function initAutocompleteIfAvailable(){
+  try{
+    if(!(window.google && google.maps && google.maps.places && google.maps.places.Autocomplete)) return;
+    const input = document.getElementById('location'); if(!input) return;
+    const ac = new google.maps.places.Autocomplete(input, { fields:['formatted_address','geometry'], componentRestrictions:{country:['de']}, types:['geocode'] });
+    ac.addListener('place_changed', ()=>{
+      const place = ac.getPlace();
+      if(place && place.geometry && place.geometry.location){
+        state.location = place.formatted_address || input.value.trim();
+        state.location_lat = place.geometry.location.lat();
+        state.location_lng = place.geometry.location.lng();
+      } else { state.location_lat=null; state.location_lng=null; }
+    });
+  }catch(e){}
 }
-function isPastDate(iso){
-  if(!iso) return true;
-  const t = new Date(todayISO());
-  const d = new Date(iso);
-  return d < t;
-}
-function haversineKm(a,b){
-  const R=6371;
-  const toRad = x=>x*Math.PI/180;
-  const dLat = toRad(b.lat-a.lat);
-  const dLng = toRad(b.lng-a.lng);
-  const lat1 = toRad(a.lat), lat2 = toRad(b.lat);
-  const h = Math.sin(dLat/2)**2 + Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLng/2)**2;
-  return 2*R*Math.asin(Math.sqrt(h));
-}
-function nearestDepotTo(lat,lng){
-  const p = {lat,lng};
-  let best = null;
-  DEPOTS.forEach(d=>{
-    const km = haversineKm(p, d);
-    if(!best || km < best.km){ best = {depot:d, km}; }
-  });
-  return best; // {depot:{name,lat,lng}, km}
+document.addEventListener('DOMContentLoaded', initAutocompleteIfAvailable);
+window.addEventListener('load', initAutocompleteIfAvailable);
+
+// === Distance pricing ===
+const KM_FREE = 30;      // freie km
+const KM_RATE = 0.80;    // € pro km darüber
+state.route = null;
+
+// === Mini-Logger (localStorage) ===
+function logLocal(key, obj){
+  try{ const k='cc_'+key; const arr=JSON.parse(localStorage.getItem(k)||'[]'); arr.push(Object.assign({ts:new Date().toISOString()}, obj||{})); while(arr.length>50) arr.shift(); localStorage.setItem(k, JSON.stringify(arr)); }catch(e){}
 }
 
 
@@ -401,8 +406,7 @@ $('checkAvail').addEventListener('click', ()=>{
   state.date_end = $('date_end').value;
   state.location = $('location').value.trim();
 
-  // Basic validations
-  if(!state.date_start || !state.location) {
+  if(!state.date_start || !state.location){
     $('availInfo').className='info warn'; $('availInfo').textContent='Bitte Datum und Ort/PLZ angeben.'; $('availInfo').classList.remove('hidden'); return;
   }
   if(isPastDate(state.date_start)){
@@ -413,58 +417,58 @@ $('checkAvail').addEventListener('click', ()=>{
   }
 
   $('availInfo').className='info'; $('availInfo').innerHTML='⏳ Wir prüfen die Verfügbarkeit … bitte einen Moment.'; $('availInfo').classList.remove('hidden');
-  try { if (window.CCTrack && typeof CCTrack.event==='function') { CCTrack.event('availability_check', { date_start: state.date_start, date_end: state.date_end, location: state.location, segment: state.segment||'' }); } } catch(e) { console.warn('[CCTrack] availability_check error:', e); }
+  try { if (window.CCTrack && typeof CCTrack.event==='function') { CCTrack.event('availability_check', { date_start: state.date_start, date_end: state.date_end, location: state.location, segment: state.segment||'' }); } } catch(e) {}
 
-  // Optional: Google Maps Geocoding + Distance Matrix if available
   const useMaps = !!(window.google && google.maps && google.maps.Geocoder);
   if(useMaps){
-    const geocoder = new google.maps.Geocoder();
-    geocoder.geocode({ address: state.location, componentRestrictions: { country: 'DE' } }, (results, status)=>{
-      if(status!=='OK' || !results || !results[0]){
-        proceedAvailability(null); return;
-      }
-      const loc = results[0].geometry.location;
-      const lat = loc.lat(), lng = loc.lng();
+    const useDirect = (state.location_lat!=null && state.location_lng!=null);
+    const processLatLng = (lat, lng)=>{
       const best = nearestDepotTo(lat,lng);
-
-      // Try Distance Matrix for ETA
       if(google.maps.DistanceMatrixService){
         const svc = new google.maps.DistanceMatrixService();
-        svc.getDistanceMatrix({
-          origins: [{lat: best.depot.lat, lng: best.depot.lng}],
-          destinations: [{lat, lng}],
-          travelMode: google.maps.TravelMode.DRIVING
-        }, (res, dmStatus)=>{
+        svc.getDistanceMatrix({ origins:[{lat:best.depot.lat,lng:best.depot.lng}], destinations:[{lat,lng}], travelMode: google.maps.TravelMode.DRIVING }, (res, dmStatus)=>{
           let distanceText = best ? `${best.km.toFixed(1)} km (Luftlinie)` : '';
-          let durationText = '';
+          let durationText = ''; let distanceKm = best ? best.km : null; let source='haversine';
           try{
             if(dmStatus==='OK' && res.rows[0].elements[0].status==='OK'){
-              distanceText = res.rows[0].elements[0].distance.text;
-              durationText = res.rows[0].elements[0].duration.text;
+              const elem = res.rows[0].elements[0];
+              distanceText = elem.distance.text; durationText = elem.duration.text;
+              distanceKm = (elem.distance.value||0)/1000; source='dm';
             }
-          }catch(e){/* fallback to haversine */}
-          proceedAvailability({ depot: best.depot.name, distanceText, durationText });
+          }catch(e){}
+          proceedAvailability({ depot: best.depot.name, distanceText, durationText, distanceKm, source });
         });
       } else {
-        proceedAvailability({ depot: best.depot.name, distanceText: `${best.km.toFixed(1)} km (Luftlinie)`, durationText: '' });
+        proceedAvailability({ depot: best.depot.name, distanceText: `${best.km.toFixed(1)} km (Luftlinie)`, durationText: '', distanceKm: best.km, source:'haversine' });
       }
-    });
+    };
+    if(useDirect){ processLatLng(state.location_lat, state.location_lng); }
+    else {
+      const geocoder = new google.maps.Geocoder();
+      geocoder.geocode({ address: state.location, componentRestrictions:{ country:'DE' } }, (results,status)=>{
+        if(status!=='OK' || !results || !results[0]){ proceedAvailability(null); return; }
+        const loc = results[0].geometry.location; processLatLng(loc.lat(), loc.lng());
+      });
+    }
   } else {
-    // No Maps: proceed with internal availability + random discount
     proceedAvailability(null);
   }
 
   function proceedAvailability(route){
+    // route may include: depot, distanceText, durationText, distanceKm, source
     const disc = simulateAvailability();
-    state.available = true;
-    state.availabilityDiscount = disc;
+    state.available = true; state.availabilityDiscount = disc;
+
+    // Ensure numeric distance if text available
+    if(route && typeof route.distanceKm === 'undefined'){ const m=(route.distanceText||'').match(/([0-9]+([\.,][0-9]+)?)/); if(m) route.distanceKm = parseFloat(m[1].replace(',', '.')); }
+    state.route = route || null;
+    logLocal('availability', { date_start: state.date_start, date_end: state.date_end, location: state.location, route: state.route });
+
     const routeLine = route ? `<br><small><strong>Nahe Standort:</strong> ${route.depot || '–'} • <strong>Strecke:</strong> ${route.distanceText||'–'} ${route.durationText? '• <strong>Dauer:</strong> '+route.durationText:''}</small>` : '';
     $('availInfo').className='info ok';
-    $('availInfo').innerHTML = disc>0 ? 
-      `✅ Gute Nachrichten: Termin verfügbar. Frühbucher‑Vorteil: <strong>${Math.round(disc*100)}%</strong>.` + routeLine
-      : `✅ Termin verfügbar. Für diesen Tag sind aktuell <strong>keine zusätzlichen Rabatte</strong> vorgesehen.` + routeLine;
-    updateSummary();
-    showStep(2);
+    $('availInfo').innerHTML = disc>0 ? `✅ Gute Nachrichten: Termin verfügbar. Frühbucher-Vorteil: <strong>${Math.round(disc*100)}%</strong>.` + routeLine
+                               : `✅ Termin verfügbar. Für diesen Tag sind aktuell <strong>keine zusätzlichen Rabatte</strong> vorgesehen.` + routeLine;
+    updateSummary(); showStep(2);
   }
 });
 
@@ -587,14 +591,20 @@ $('calc').addEventListener('click', async ()=>{
 
   const afterAvail = base * (1 - availDisc);
   const afterDays = afterAvail * (1 - dayDisc);
-  const final = Math.round(afterDays);
+  let travelKm = (state.route && typeof state.route.distanceKm === 'number') ? state.route.distanceKm : null;
+  let travelCost = 0, billableKm = 0;
+  if(travelKm!=null){ billableKm = Math.max(0, travelKm - KM_FREE); travelCost = billableKm * KM_RATE; }
+  const final = Math.round(afterDays + travelCost);
 
-  state.price = { base, afterAvail, afterDays, final, availDisc, dayDisc, hrs, days };
+  state.price = { base, afterAvail, afterDays, final, availDisc, dayDisc, hrs, days, travel:{ km: travelKm, billableKm, cost: travelCost, kmFree: KM_FREE, kmRate: KM_RATE } };
 
   out.innerHTML = `
     <div><strong>Preisvorschlag:</strong> ${formatEUR(final)}</div>
     <div class="muted">
       Basis: ${formatEUR(base)} • Verfügbarkeit: −${Math.round(availDisc*100)}% • Mehrtägig: −${Math.round(dayDisc*100)}% • Dauer: ${hrs} h
+    </div>
+    <div class="muted">
+      Anfahrt: ${ (state.price.travel && state.price.travel.km!=null) ? ('+'+formatEUR(state.price.travel.cost) + ` • Strecke: ${state.price.travel.km.toFixed(1)} km (frei: ${KM_FREE} km; berechnet: ${state.price.travel.billableKm.toFixed(1)} km @ ${KM_RATE.toFixed(2)} €/km)`) : '— (noch ohne Distanz)' }
     </div>
   `;
   showStep(6);
@@ -625,7 +635,12 @@ $('sendLead').addEventListener('click', async ()=>{
     softice_on: state.addons.softice?'1':'0',
     milkschaum_on: state.addons.milkschaum?'1':'0',
     price_final: state.price? state.price.final : '',
-    price_base: state.price? state.price.base : ''
+    price_base: state.price? state.price.base : '',
+    travel_cost: (state.price && state.price.travel) ? String(state.price.travel.cost) : '',
+    travel_km: (state.price && state.price.travel && state.price.travel.km!=null) ? String(state.price.travel.km) : '',
+    travel_billable_km: (state.price && state.price.travel) ? String(state.price.travel.billableKm) : '',
+    travel_km_free: String(KM_FREE),
+    travel_km_rate: String(KM_RATE)
   });
   const box=$('leadMsg'); box.classList.remove('hidden'); box.className='info'; box.textContent='⏳ Sende Anfrage …';
   try{
@@ -633,6 +648,7 @@ $('sendLead').addEventListener('click', async ()=>{
     const j = await r.json();
     if(j.ok){
       box.className='info ok'; box.innerHTML='✅ Danke! Wir melden uns kurzfristig mit einem Angebot.';
+      try{ logLocal('leads', {name, email, phone, price: state.price, route: state.route}); }catch(e){}
     } else {
       box.className='info warn'; box.innerHTML='⚠️ Konnte nicht gesendet werden: '+(j.error||'Unbekannter Fehler');
     }
@@ -1121,7 +1137,6 @@ document.getElementById('date_end')?.addEventListener('change', rebuildDayTimes)
     const afterDays = afterAvail * (1 - dayDisc);
     const final = Math.round(afterDays);
     state.price = { base, afterAvail, afterDays, final, availDisc, dayDisc, hrs, days };
-    try { if (window.CCTrack && typeof CCTrack.event==='function') { CCTrack.event('price_calculated', { guests: state.guests, hours: hrs, addons: Object.keys(state.addons).filter(k=>state.addons[k]), price: final }); } } catch(e) { console.warn('[CCTrack] price_calculated error:', e); }
     out.innerHTML = `
       <div><strong>Preisvorschlag:</strong> ${new Intl.NumberFormat('de-DE',{ style:'currency', currency:'EUR'}).format(final)}</div>
       <div class="muted">
@@ -1132,179 +1147,9 @@ document.getElementById('date_end')?.addEventListener('change', rebuildDayTimes)
 })();
 </script>
 
-<!-- === COOKIE NOTICE (Coffee-Car CI) === -->
-<div id="cc-cookie" style="position:fixed;z-index:9999;bottom:20px;left:50%;transform:translateX(-50%);
-background:#fff;border:1px solid #e5e7eb;box-shadow:0 6px 20px rgba(31,41,55,.12);border-radius:16px;
-max-width:480px;width:calc(100% - 40px);padding:22px 20px;display:none;animation:fadeIn .6s ease;">
-  <div style="display:flex;flex-direction:column;gap:10px;">
-    <p style="margin:0;font-size:.95rem;color:#374151;line-height:1.5;">
-      🍪 <strong>Wir respektieren Ihre Privatsphäre.</strong><br>
-      Diese Website verwendet nur technisch notwendige Cookies, um den Coffee-Car-Kalkulator und die Kontaktfunktion bereitzustellen.
-      Analytik- oder Marketing-Cookies werden <u>nicht</u> gesetzt, sofern Sie dem nicht ausdrücklich zustimmen.
-    </p>
-    <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;">
-      <button id="cc-cookie-accept" style="background:var(--mint,#8BC4B5);border:none;padding:8px 14px;border-radius:999px;
-      font-weight:600;color:#0f5132;cursor:pointer;">Nur notwendige akzeptieren</button>
-      <button id="cc-cookie-pref" style="background:#fff;border:1px solid #d1d5db;padding:8px 14px;border-radius:999px;
-      font-weight:500;color:#374151;cursor:pointer;">Einstellungen</button>
-    </div>
-  </div>
-</div>
-
-<!-- === COOKIE PREFERENCES MODAL === -->
-<div id="cc-pref-modal" style="position:fixed;z-index:10000;inset:0;background:rgba(0,0,0,.4);display:none;align-items:center;justify-content:center;">
-  <div style="background:#fff;border-radius:16px;box-shadow:0 8px 30px rgba(0,0,0,.2);max-width:420px;width:90%;padding:24px;">
-    <h3 style="margin-top:0;">Cookie-Einstellungen</h3>
-    <p style="font-size:.95rem;line-height:1.6;">Wählen Sie, welche Cookies wir setzen dürfen:</p>
-    <label style="display:block;margin-bottom:10px;">
-      <input type="checkbox" disabled checked> Notwendig – für Funktion & Sicherheit (immer aktiv)
-    </label>
-    <label style="display:block;margin-bottom:14px;">
-      <input type="checkbox" id="cc-analytics"> Analytik – anonyme Nutzungsauswertung (z.&nbsp;B. Seitenaufrufe)
-    </label>
-    <div style="display:flex;gap:10px;justify-content:flex-end;">
-      <button id="cc-save" style="background:var(--mint,#8BC4B5);border:none;padding:8px 14px;border-radius:999px;
-      font-weight:600;color:#0f5132;cursor:pointer;">Speichern</button>
-      <button id="cc-cancel" style="background:#fff;border:1px solid #d1d5db;padding:8px 14px;border-radius:999px;
-      font-weight:500;color:#374151;cursor:pointer;">Abbrechen</button>
-    </div>
-  </div>
-</div>
-
-<!-- === ENHANCED COOKIE SCRIPT (mit Consent-Event) === -->
-<script>
-(function(){
-  const box=document.getElementById('cc-cookie');
-  const modal=document.getElementById('cc-pref-modal');
-  const analyticsBox=document.getElementById('cc-analytics');
-  const KEY='cc-cookie-state';
-
-  const state=localStorage.getItem(KEY);
-  if(!state){ box.style.display='block'; }
-
-  function setState(val){
-    localStorage.setItem(KEY,val);
-    window.dispatchEvent(new CustomEvent('cc-consent-changed',{detail:{state:val}}));
-  }
-
-  document.getElementById('cc-cookie-accept').onclick=()=>{
-    setState('necessary'); box.style.display='none';
-  };
-  document.getElementById('cc-cookie-pref').onclick=()=>{ modal.style.display='flex'; };
-
-  document.getElementById('cc-save').onclick=()=>{
-    const pref=analyticsBox && analyticsBox.checked ? 'analytics' : 'necessary';
-    setState(pref); modal.style.display='none'; box.style.display='none';
-  };
-  document.getElementById('cc-cancel').onclick=()=>{ modal.style.display='none'; };
-
-  if(state==='analytics'){
-    window.dispatchEvent(new CustomEvent('cc-consent-changed',{detail:{state}}));
-  }
-})();
-</script>
-
-<!-- === ANALYTICS LOADER (lädt nur bei consent = 'analytics') === -->
-<script>
-(function(){
-  const RESPECT_DNT = true;
-
-  // TODO: Trage hier deine IDs/URLs ein
-  const GA4_ID      = 'G-XXXXXXXXXX';            // z.B. G-AB12C3D4EF
-  const MATOMO_URL  = '';                        // z.B. https://analytics.deine-domain.de
-  const MATOMO_SITE = '';                        // z.B. "1"
-
-  let gaLoaded=false, matomoLoaded=false;
-
-  function dntEnabled(){
-    return RESPECT_DNT && (
-      navigator.doNotTrack === '1' ||
-      window.doNotTrack === '1' ||
-      navigator.msDoNotTrack === '1'
-    );
-  }
-
-  function loadScript(src, async=true){
-    return new Promise((resolve,reject)=>{
-      const s=document.createElement('script');
-      s.src=src; s.async=async;
-      s.onload=resolve; s.onerror=reject;
-      document.head.appendChild(s);
-    });
-  }
-
-  async function initGA4(){
-    if(gaLoaded || !GA4_ID) return;
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){ dataLayer.push(arguments); }
-    window.gtag = gtag;
-    gtag('js', new Date());
-    gtag('config', GA4_ID, { anonymize_ip: true });
-    await loadScript('https://www.googletagmanager.com/gtag/js?id='+encodeURIComponent(GA4_ID));
-    gaLoaded=true;
-  }
-
-  async function initMatomo(){
-    if(matomoLoaded || !MATOMO_URL || !MATOMO_SITE) return;
-    window._paq = window._paq || [];
-    _paq.push(['requireConsent']);
-    _paq.push(['trackPageView']);
-    _paq.push(['enableLinkTracking']);
-    _paq.push(['setDoNotTrack', RESPECT_DNT]);
-    (function() {
-      const u = MATOMO_URL.replace(/\/+$/,'/') ;
-      _paq.push(['setTrackerUrl', u+'matomo.php']);
-      _paq.push(['setSiteId', MATOMO_SITE]);
-      const d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
-      g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
-    })();
-    _paq.push(['rememberConsentGiven']);
-    matomoLoaded=true;
-  }
-
-  async function enableAnalytics(){
-    if(dntEnabled()){
-      console.info('[CC] DNT aktiv – Analytics werden nicht geladen.');
-      return;
-    }
-    await Promise.all([initGA4(), initMatomo()]);
-    console.info('[CC] Analytics aktiviert.');
-  }
-
-  window.addEventListener('cc-consent-changed', (e)=>{
-    const st = e && e.detail && e.detail.state;
-    if(st === 'analytics'){ enableAnalytics(); }
-  });
-
-  try{
-    const current = localStorage.getItem('cc-cookie-state');
-    if(current === 'analytics'){ enableAnalytics(); }
-  }catch(err){ /* ignore */ }
-
-  window.CCTrack = {
-    event: function(name, params){
-      if(window.gtag){ window.gtag('event', name, params||{}); }
-      if(window._paq){ window._paq.push(['trackEvent','CC', name, JSON.stringify(params||{})]); }
-    },
-    pageview: function(url){
-      if(window.gtag){ window.gtag('event', 'page_view', {page_location:url||location.href}); }
-      if(window._paq){
-        if(url){ window._paq.push(['setCustomUrl', url]); }
-        window._paq.push(['trackPageView']);
-      }
-    }
-  };
-})();
-</script>
-
-<style>
-@keyframes fadeIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
-</style>
-
-
-<!-- Optional: Google Maps JS (für Autocomplete & Distance Matrix) -->
+<!-- Optional: Google Maps JS (für Autocomplete & Distance Matrix) – aktivieren, um echte Fahrzeit zu sehen -->
 <!--
-<script async src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places"></script>
+<script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBIRGZPccaGFYnieQTR8gbAox2KDL0pgoQ&libraries=places"></script>
 -->
 
 </body>
