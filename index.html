@@ -1147,10 +1147,55 @@ document.getElementById('date_end')?.addEventListener('change', rebuildDayTimes)
 })();
 </script>
 
-<!-- Optional: Google Maps JS (für Autocomplete & Distance Matrix) – aktivieren, um echte Fahrzeit zu sehen -->
-<!--
+
 <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBIRGZPccaGFYnieQTR8gbAox2KDL0pgoQ&libraries=places"></script>
 -->
+
+
+<!-- === RESCUE DEBUG BLOCK (safe to keep) === -->
+<script>
+// Visible error banner
+(function(){
+  function showErr(msg){
+    const bar = document.createElement('div');
+    bar.style.cssText='position:fixed;z-index:99999;bottom:0;left:0;right:0;background:#fee2e2;color:#991b1b;padding:8px 12px;font:14px/1.4 system-ui, -apple-system, Segoe UI, Roboto, Arial; border-top:1px solid #fecaca';
+    bar.textContent='⚠️ Scriptfehler: ' + msg;
+    document.body.appendChild(bar);
+    setTimeout(()=>{ bar.remove(); }, 8000);
+  }
+  window.addEventListener('error', function(e){ showErr(e.message||'Unbekannter Fehler'); });
+  window.addEventListener('unhandledrejection', function(e){ showErr('Promise-Rejection: '+(e.reason && (e.reason.message||e.reason)) ); });
+})();
+
+// Ensure the main button has at least a basic handler
+(function(){
+  function attach(){
+    var btn = document.getElementById('checkAvail');
+    if(!btn) return;
+    if(btn.dataset.ccRescueAttached) return;
+    btn.dataset.ccRescueAttached='1';
+    btn.addEventListener('click', function(){
+      try{
+        // Fallback UI if main logic fails:
+        var info = document.getElementById('availInfo');
+        if(info){
+          info.className = 'info ok';
+          info.textContent = 'Test: Button reagiert. Wenn die umfangreiche Prüfung nicht losläuft, blockiert ein anderes Script vorher.';
+          info.classList.remove('hidden');
+        } else {
+          alert('Test: Button reagiert.');
+        }
+      }catch(e){ console.warn('[RESCUE] click error', e); }
+    });
+    console.info('[RESCUE] Basic handler attached to #checkAvail');
+  }
+  // Try now and on DOM ready
+  if(document.readyState!=='loading') attach();
+  document.addEventListener('DOMContentLoaded', attach);
+  // Try again after 1s in case DOM updated
+  setTimeout(attach, 1000);
+})();
+</script>
 
 </body>
 </html>
