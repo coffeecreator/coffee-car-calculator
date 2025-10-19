@@ -30,7 +30,7 @@
   .info{display:flex; gap:12px; align-items:flex-start; padding:10px; border:1px dashed var(--line); border-radius:12px; background:#F6FAF9; margin-top:8px}
   .ok{color:#0C3F37} .warn{color:#8B5E00}
   .pricebox{display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:999px; background:#F3F7F6; border:1px dashed var(--line); color:var(--accent); margin-top:10px}
-  .grid2{display:grid; grid-template-columns:1.1fr .9fr; gap:18px}
+  .grid2{display:grid; grid-template-columns:1fr; gap:18px}
   .ref-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px}
   .ref-card{border:1px solid var(--line); border-radius:14px; padding:12px; background:#fff}
   .ref-card h4{margin:0 0 4px 0} .ref-card p{margin:0; color:var(--muted)}
@@ -188,21 +188,22 @@ body.dark .switch { background:#20323a; }
 .daytimes-grid label { font-weight:600; margin:0 0 6px 0; }
 body.dark .daytimes-card { background:#10161c; border-color:#1f2a34; }
 
-/* Help Modal (footer variant) */
-.help-modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:9999;background:rgba(0,0,0,.45);padding:16px}
-.help-card{background:var(--card);color:var(--ink);max-width:820px;width:100%;border:1px solid var(--line);border-radius:16px;overflow:auto;max-height:90vh;box-shadow:0 10px 30px rgba(0,0,0,.2)}
-.help-card header{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:1px solid var(--line)}
-.help-card .body{padding:16px 18px}
-.help-close{background:none;border:0;font-size:22px;cursor:pointer;color:var(--ink-soft)}
-.help-qa details{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:8px 0;background:var(--card)}
-.help-qa summary{cursor:pointer;font-weight:700;color:var(--ink)}
+/* Light-only: neutralize dark mode */
+body.dark{
+  --bg:#FAFBFC;
+  --card:#FFFFFF;
+  --line:#E6E8EB;
+  --ink:#1A1F2B;
+  --ink-soft:#3B4150;
+  --accent:#0F766E;
+}
 
 </style>
 </head>
 <body>
 <div class="wrap">
 <div class="header">
-<div class="brand"><span class="chip">Chois Coffee</span><h1>Coffee‑Car Buchungs‑Wizard</h1></div>
+<div class="brand"><h1>Coffee‑Car Buchungs‑Wizard</h1></div>
 <div class="steps">
 <div class="dot" id="s1"></div><div class="dot" id="s2"></div><div class="dot" id="s3"></div>
 <div class="dot" id="s4"></div><div class="dot" id="s5"></div><div class="dot" id="s6"></div>
@@ -297,10 +298,7 @@ body.dark .daytimes-card { background:#10161c; border-color:#1f2a34; }
 <div class="info hidden" id="leadMsg"></div>
 </div>
 </div>
-<div class="card">
-<h3>Ihre Angaben</h3>
-<div class="muted" id="summary">
-<div><span class="badge">Noch keine Angaben</span></div>
+
 </div>
 <div style="margin-top:16px">
 <h3>Hinweis</h3>
@@ -1035,46 +1033,5 @@ document.getElementById('date_end')?.addEventListener('change', rebuildDayTimes)
   });
 })();
 </script>
-
-<div class="help-modal" id="helpModal" aria-hidden="true">
-  <div class="help-card" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
-    <header>
-      <h3 id="helpTitle">Fragen & Hilfe</h3>
-      <button class="help-close" id="helpClose" aria-label="Schließen">×</button>
-    </header>
-    <div class="body">
-      <div class="help-qa">
-        <details open><summary>Wie aktiviere ich Softeis?</summary><p>Unter „5) Preis & Optionen“ das Add-on „Softeis“ anklicken.</p></details>
-        <details><summary>Mehrere Tage erfassen?</summary><p>Start- & Enddatum setzen; bei mehreren Tagen erscheint eine Tagesliste für jeden Tag.</p></details>
-        <details><summary>Verbindliches Angebot?</summary><p>Unter „6) Angebot sichern“ Name & E-Mail eintragen, Einwilligung anhaken, senden.</p></details>
-        <details><summary>Kontakt</summary><p><a href="mailto:info@coffee-car.com">info@coffee-car.com</a> · +49&nbsp;711&nbsp;219535609</p></details>
-      </div>
-    </div>
-  </div>
-</div>
-<script>
-  (function(){
-    const modal=document.getElementById('helpModal');
-    const close=document.getElementById('helpClose');
-    if(close && modal){
-      close.addEventListener('click',()=> modal.style.display='none');
-      modal.addEventListener('click',e=>{ if(e.target===modal) modal.style.display='none'; });
-    }
-  })();
-
-// Footer link opens help modal
-(function(){
-  const link=document.getElementById('helpLink');
-  const modal=document.getElementById('helpModal');
-  if(link && modal){
-    link.addEventListener('click', function(e){
-      e.preventDefault();
-      modal.style.display='flex';
-    });
-  }
-})();
-
-</script>
-
 </body>
 </html>
