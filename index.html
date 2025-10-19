@@ -363,6 +363,8 @@ $('checkAvail').addEventListener('click', ()=>{
     $('availInfo').className='info warn'; $('availInfo').textContent='Bitte Datum und Ort/PLZ angeben.'; $('availInfo').classList.remove('hidden'); return;
   }
   $('availInfo').className='info'; $('availInfo').innerHTML='⏳ Wir prüfen die Verfügbarkeit … bitte einen Moment.'; $('availInfo').classList.remove('hidden');
+  try { if (window.CCTrack && typeof CCTrack.event==='function') { CCTrack.event('availability_check', { date_start: state.date_start, date_end: state.date_end, location: state.location, segment: state.segment||'' }); } } catch(e) { console.warn('[CCTrack] availability_check error:', e); }
+
   setTimeout(()=>{
     const disc = simulateAvailability();
     state.available = true;
@@ -1028,6 +1030,7 @@ document.getElementById('date_end')?.addEventListener('change', rebuildDayTimes)
     const afterDays = afterAvail * (1 - dayDisc);
     const final = Math.round(afterDays);
     state.price = { base, afterAvail, afterDays, final, availDisc, dayDisc, hrs, days };
+    try { if (window.CCTrack && typeof CCTrack.event==='function') { CCTrack.event('price_calculated', { guests: state.guests, hours: hrs, addons: Object.keys(state.addons).filter(k=>state.addons[k]), price: final }); } } catch(e) { console.warn('[CCTrack] price_calculated error:', e); }
     out.innerHTML = `
       <div><strong>Preisvorschlag:</strong> ${new Intl.NumberFormat('de-DE',{ style:'currency', currency:'EUR'}).format(final)}</div>
       <div class="muted">
@@ -1037,5 +1040,175 @@ document.getElementById('date_end')?.addEventListener('change', rebuildDayTimes)
   });
 })();
 </script>
+
+<!-- === COOKIE NOTICE (Coffee-Car CI) === -->
+<div id="cc-cookie" style="position:fixed;z-index:9999;bottom:20px;left:50%;transform:translateX(-50%);
+background:#fff;border:1px solid #e5e7eb;box-shadow:0 6px 20px rgba(31,41,55,.12);border-radius:16px;
+max-width:480px;width:calc(100% - 40px);padding:22px 20px;display:none;animation:fadeIn .6s ease;">
+  <div style="display:flex;flex-direction:column;gap:10px;">
+    <p style="margin:0;font-size:.95rem;color:#374151;line-height:1.5;">
+      🍪 <strong>Wir respektieren Ihre Privatsphäre.</strong><br>
+      Diese Website verwendet nur technisch notwendige Cookies, um den Coffee-Car-Kalkulator und die Kontaktfunktion bereitzustellen.
+      Analytik- oder Marketing-Cookies werden <u>nicht</u> gesetzt, sofern Sie dem nicht ausdrücklich zustimmen.
+    </p>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;">
+      <button id="cc-cookie-accept" style="background:var(--mint,#8BC4B5);border:none;padding:8px 14px;border-radius:999px;
+      font-weight:600;color:#0f5132;cursor:pointer;">Nur notwendige akzeptieren</button>
+      <button id="cc-cookie-pref" style="background:#fff;border:1px solid #d1d5db;padding:8px 14px;border-radius:999px;
+      font-weight:500;color:#374151;cursor:pointer;">Einstellungen</button>
+    </div>
+  </div>
+</div>
+
+<!-- === COOKIE PREFERENCES MODAL === -->
+<div id="cc-pref-modal" style="position:fixed;z-index:10000;inset:0;background:rgba(0,0,0,.4);display:none;align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:16px;box-shadow:0 8px 30px rgba(0,0,0,.2);max-width:420px;width:90%;padding:24px;">
+    <h3 style="margin-top:0;">Cookie-Einstellungen</h3>
+    <p style="font-size:.95rem;line-height:1.6;">Wählen Sie, welche Cookies wir setzen dürfen:</p>
+    <label style="display:block;margin-bottom:10px;">
+      <input type="checkbox" disabled checked> Notwendig – für Funktion & Sicherheit (immer aktiv)
+    </label>
+    <label style="display:block;margin-bottom:14px;">
+      <input type="checkbox" id="cc-analytics"> Analytik – anonyme Nutzungsauswertung (z.&nbsp;B. Seitenaufrufe)
+    </label>
+    <div style="display:flex;gap:10px;justify-content:flex-end;">
+      <button id="cc-save" style="background:var(--mint,#8BC4B5);border:none;padding:8px 14px;border-radius:999px;
+      font-weight:600;color:#0f5132;cursor:pointer;">Speichern</button>
+      <button id="cc-cancel" style="background:#fff;border:1px solid #d1d5db;padding:8px 14px;border-radius:999px;
+      font-weight:500;color:#374151;cursor:pointer;">Abbrechen</button>
+    </div>
+  </div>
+</div>
+
+<!-- === ENHANCED COOKIE SCRIPT (mit Consent-Event) === -->
+<script>
+(function(){
+  const box=document.getElementById('cc-cookie');
+  const modal=document.getElementById('cc-pref-modal');
+  const analyticsBox=document.getElementById('cc-analytics');
+  const KEY='cc-cookie-state';
+
+  const state=localStorage.getItem(KEY);
+  if(!state){ box.style.display='block'; }
+
+  function setState(val){
+    localStorage.setItem(KEY,val);
+    window.dispatchEvent(new CustomEvent('cc-consent-changed',{detail:{state:val}}));
+  }
+
+  document.getElementById('cc-cookie-accept').onclick=()=>{
+    setState('necessary'); box.style.display='none';
+  };
+  document.getElementById('cc-cookie-pref').onclick=()=>{ modal.style.display='flex'; };
+
+  document.getElementById('cc-save').onclick=()=>{
+    const pref=analyticsBox && analyticsBox.checked ? 'analytics' : 'necessary';
+    setState(pref); modal.style.display='none'; box.style.display='none';
+  };
+  document.getElementById('cc-cancel').onclick=()=>{ modal.style.display='none'; };
+
+  if(state==='analytics'){
+    window.dispatchEvent(new CustomEvent('cc-consent-changed',{detail:{state}}));
+  }
+})();
+</script>
+
+<!-- === ANALYTICS LOADER (lädt nur bei consent = 'analytics') === -->
+<script>
+(function(){
+  const RESPECT_DNT = true;
+
+  // TODO: Trage hier deine IDs/URLs ein
+  const GA4_ID      = 'G-XXXXXXXXXX';            // z.B. G-AB12C3D4EF
+  const MATOMO_URL  = '';                        // z.B. https://analytics.deine-domain.de
+  const MATOMO_SITE = '';                        // z.B. "1"
+
+  let gaLoaded=false, matomoLoaded=false;
+
+  function dntEnabled(){
+    return RESPECT_DNT && (
+      navigator.doNotTrack === '1' ||
+      window.doNotTrack === '1' ||
+      navigator.msDoNotTrack === '1'
+    );
+  }
+
+  function loadScript(src, async=true){
+    return new Promise((resolve,reject)=>{
+      const s=document.createElement('script');
+      s.src=src; s.async=async;
+      s.onload=resolve; s.onerror=reject;
+      document.head.appendChild(s);
+    });
+  }
+
+  async function initGA4(){
+    if(gaLoaded || !GA4_ID) return;
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){ dataLayer.push(arguments); }
+    window.gtag = gtag;
+    gtag('js', new Date());
+    gtag('config', GA4_ID, { anonymize_ip: true });
+    await loadScript('https://www.googletagmanager.com/gtag/js?id='+encodeURIComponent(GA4_ID));
+    gaLoaded=true;
+  }
+
+  async function initMatomo(){
+    if(matomoLoaded || !MATOMO_URL || !MATOMO_SITE) return;
+    window._paq = window._paq || [];
+    _paq.push(['requireConsent']);
+    _paq.push(['trackPageView']);
+    _paq.push(['enableLinkTracking']);
+    _paq.push(['setDoNotTrack', RESPECT_DNT]);
+    (function() {
+      const u = MATOMO_URL.replace(/\/+$/,'/') ;
+      _paq.push(['setTrackerUrl', u+'matomo.php']);
+      _paq.push(['setSiteId', MATOMO_SITE]);
+      const d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+      g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
+    })();
+    _paq.push(['rememberConsentGiven']);
+    matomoLoaded=true;
+  }
+
+  async function enableAnalytics(){
+    if(dntEnabled()){
+      console.info('[CC] DNT aktiv – Analytics werden nicht geladen.');
+      return;
+    }
+    await Promise.all([initGA4(), initMatomo()]);
+    console.info('[CC] Analytics aktiviert.');
+  }
+
+  window.addEventListener('cc-consent-changed', (e)=>{
+    const st = e && e.detail && e.detail.state;
+    if(st === 'analytics'){ enableAnalytics(); }
+  });
+
+  try{
+    const current = localStorage.getItem('cc-cookie-state');
+    if(current === 'analytics'){ enableAnalytics(); }
+  }catch(err){ /* ignore */ }
+
+  window.CCTrack = {
+    event: function(name, params){
+      if(window.gtag){ window.gtag('event', name, params||{}); }
+      if(window._paq){ window._paq.push(['trackEvent','CC', name, JSON.stringify(params||{})]); }
+    },
+    pageview: function(url){
+      if(window.gtag){ window.gtag('event', 'page_view', {page_location:url||location.href}); }
+      if(window._paq){
+        if(url){ window._paq.push(['setCustomUrl', url]); }
+        window._paq.push(['trackPageView']);
+      }
+    }
+  };
+})();
+</script>
+
+<style>
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+</style>
+
 </body>
 </html>
