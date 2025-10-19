@@ -221,6 +221,11 @@ body.dark .daytimes-card { background:#10161c; border-color:#1f2a34; }
 /* Optional: ensure logo remains readable in dark mode if the PNG is dark */
 body.dark .logo-img.use-invert{filter:brightness(1.08) contrast(1.05)}
 
+
+/* Auto-switch logos with fade */
+.logo-img{transition:opacity .25s ease;}
+.logo-img.hidden{opacity:0}
+
 </style>
 </head>
 <body>
@@ -228,7 +233,7 @@ body.dark .logo-img.use-invert{filter:brightness(1.08) contrast(1.05)}
 <div class="header">
 <div class="brand">
   <div class="logo-wrap">
-    <img src="logo_coffee-car-mint.png" alt="Coffee-Car GmbH Logo" class="logo-img use-invert"/>
+    <img src="logo_coffee-car-mint.png" alt="Coffee-Car GmbH Logo" id="logoImg" class="logo-img use-invert"/>
     <h1 class="logo-text">
       Coffee‑Car Buchungs‑Wizard
       <small>Professional Coffee Catering</small>
@@ -1117,6 +1122,45 @@ document.getElementById('date_end')?.addEventListener('change', rebuildDayTimes)
   elToggle.addEventListener('click', ()=>{
     apply(document.body.classList.contains('dark') ? 'light' : 'dark');
   });
+})();
+
+
+// === Auto logo switch (light/dark) ===
+(function(){
+  const img = document.getElementById('logoImg');
+  if(!img) return;
+  const SRC_LIGHT = 'logo_coffee-car-mint.png';
+  const SRC_DARK  = 'logo_coffee-car-white.png';
+
+  function applyForBody(){
+    const dark = document.body.classList.contains('dark');
+    const want = dark ? SRC_DARK : SRC_LIGHT;
+    if (img.getAttribute('src') !== want){
+      img.classList.add('hidden');
+      setTimeout(()=>{ img.setAttribute('src', want); img.classList.remove('hidden'); }, 150);
+    }
+  }
+
+  // initial: if no storage, honor system preference
+  try{
+    const hasStored = localStorage.getItem('cc_theme');
+    if(!hasStored && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches){
+      document.body.classList.add('dark');
+    }
+  }catch(e){}
+
+  // run now
+  applyForBody();
+
+  // observe theme switcher clicks (we already toggle body.dark in theme manager)
+  const mo = new MutationObserver(applyForBody);
+  mo.observe(document.body, { attributes:true, attributeFilter:['class'] });
+
+  // react to system changes, if user didn't explicitly store
+  if (window.matchMedia){
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    mq.addEventListener ? mq.addEventListener('change', applyForBody) : mq.addListener(applyForBody);
+  }
 })();
 
 </script>
