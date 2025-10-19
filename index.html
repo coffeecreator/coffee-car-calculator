@@ -310,6 +310,46 @@ body.dark{
 </div>
 <script>
 const API = "https://script.google.com/macros/s/AKfycbw4-wgD6hQFoPHGtbew27ysmR8q0NokxGfV_ym2PKgMi5bt415b-PrtG12tKbUXwCpxeg/exec";
+// === CONFIG: Depots (HQ & Standorte) for distance calc ===
+const DEPOTS = [
+  {name:'Frankfurt (HQ)', lat:50.1109, lng:8.6821},
+  {name:'Stuttgart',      lat:48.7758, lng:9.1829},
+  {name:'München',        lat:48.1351, lng:11.5820},
+  {name:'Singen',         lat:47.7649, lng:8.8421},
+  {name:'Düsseldorf',     lat:51.2277, lng:6.7735},
+];
+
+// === Helpers: date/geo ===
+function todayISO(){
+  const t = new Date();
+  const y=t.getFullYear(), m=String(t.getMonth()+1).padStart(2,'0'), d=String(t.getDate()).padStart(2,'0');
+  return `${y}-${m}-${d}`;
+}
+function isPastDate(iso){
+  if(!iso) return true;
+  const t = new Date(todayISO());
+  const d = new Date(iso);
+  return d < t;
+}
+function haversineKm(a,b){
+  const R=6371;
+  const toRad = x=>x*Math.PI/180;
+  const dLat = toRad(b.lat-a.lat);
+  const dLng = toRad(b.lng-a.lng);
+  const lat1 = toRad(a.lat), lat2 = toRad(b.lat);
+  const h = Math.sin(dLat/2)**2 + Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLng/2)**2;
+  return 2*R*Math.asin(Math.sqrt(h));
+}
+function nearestDepotTo(lat,lng){
+  const p = {lat,lng};
+  let best = null;
+  DEPOTS.forEach(d=>{
+    const km = haversineKm(p, d);
+    if(!best || km < best.km){ best = {depot:d, km}; }
+  });
+  return best; // {depot:{name,lat,lng}, km}
+}
+
 
 // Placeholder map; connect to Excel/Sheet via build step later
 const REF_MAP = {
@@ -355,27 +395,77 @@ try { var el = document.getElementById("summary"); if(el){ el.innerHTML = el.inn
 }
 
 // Step 1
+
 $('checkAvail').addEventListener('click', ()=>{
   state.date_start = $('date_start').value;
   state.date_end = $('date_end').value;
   state.location = $('location').value.trim();
+
+  // Basic validations
   if(!state.date_start || !state.location) {
     $('availInfo').className='info warn'; $('availInfo').textContent='Bitte Datum und Ort/PLZ angeben.'; $('availInfo').classList.remove('hidden'); return;
   }
+  if(isPastDate(state.date_start)){
+    $('availInfo').className='info warn'; $('availInfo').textContent='Das Startdatum darf nicht in der Vergangenheit liegen.'; $('availInfo').classList.remove('hidden'); return;
+  }
+  if(state.date_end && state.date_end < state.date_start){
+    $('availInfo').className='info warn'; $('availInfo').textContent='Das Enddatum darf nicht vor dem Startdatum liegen.'; $('availInfo').classList.remove('hidden'); return;
+  }
+
   $('availInfo').className='info'; $('availInfo').innerHTML='⏳ Wir prüfen die Verfügbarkeit … bitte einen Moment.'; $('availInfo').classList.remove('hidden');
   try { if (window.CCTrack && typeof CCTrack.event==='function') { CCTrack.event('availability_check', { date_start: state.date_start, date_end: state.date_end, location: state.location, segment: state.segment||'' }); } } catch(e) { console.warn('[CCTrack] availability_check error:', e); }
 
-  setTimeout(()=>{
+  // Optional: Google Maps Geocoding + Distance Matrix if available
+  const useMaps = !!(window.google && google.maps && google.maps.Geocoder);
+  if(useMaps){
+    const geocoder = new google.maps.Geocoder();
+    geocoder.geocode({ address: state.location, componentRestrictions: { country: 'DE' } }, (results, status)=>{
+      if(status!=='OK' || !results || !results[0]){
+        proceedAvailability(null); return;
+      }
+      const loc = results[0].geometry.location;
+      const lat = loc.lat(), lng = loc.lng();
+      const best = nearestDepotTo(lat,lng);
+
+      // Try Distance Matrix for ETA
+      if(google.maps.DistanceMatrixService){
+        const svc = new google.maps.DistanceMatrixService();
+        svc.getDistanceMatrix({
+          origins: [{lat: best.depot.lat, lng: best.depot.lng}],
+          destinations: [{lat, lng}],
+          travelMode: google.maps.TravelMode.DRIVING
+        }, (res, dmStatus)=>{
+          let distanceText = best ? `${best.km.toFixed(1)} km (Luftlinie)` : '';
+          let durationText = '';
+          try{
+            if(dmStatus==='OK' && res.rows[0].elements[0].status==='OK'){
+              distanceText = res.rows[0].elements[0].distance.text;
+              durationText = res.rows[0].elements[0].duration.text;
+            }
+          }catch(e){/* fallback to haversine */}
+          proceedAvailability({ depot: best.depot.name, distanceText, durationText });
+        });
+      } else {
+        proceedAvailability({ depot: best.depot.name, distanceText: `${best.km.toFixed(1)} km (Luftlinie)`, durationText: '' });
+      }
+    });
+  } else {
+    // No Maps: proceed with internal availability + random discount
+    proceedAvailability(null);
+  }
+
+  function proceedAvailability(route){
     const disc = simulateAvailability();
     state.available = true;
     state.availabilityDiscount = disc;
+    const routeLine = route ? `<br><small><strong>Nahe Standort:</strong> ${route.depot || '–'} • <strong>Strecke:</strong> ${route.distanceText||'–'} ${route.durationText? '• <strong>Dauer:</strong> '+route.durationText:''}</small>` : '';
     $('availInfo').className='info ok';
     $('availInfo').innerHTML = disc>0 ? 
-      `✅ Gute Nachrichten: Wir haben Kapazitäten! Sie sparen <strong>${Math.round(disc*100)}%</strong> bei Buchung innerhalb der nächsten 48h.`
-      : `✅ Termin verfügbar. Für diesen Tag sind aktuell <strong>keine zusätzlichen Rabatte</strong> vorgesehen.`;
+      `✅ Gute Nachrichten: Termin verfügbar. Frühbucher‑Vorteil: <strong>${Math.round(disc*100)}%</strong>.` + routeLine
+      : `✅ Termin verfügbar. Für diesen Tag sind aktuell <strong>keine zusätzlichen Rabatte</strong> vorgesehen.` + routeLine;
     updateSummary();
     showStep(2);
-  }, 900);
+  }
 });
 
 // Step 2
@@ -553,6 +643,7 @@ $('sendLead').addEventListener('click', async ()=>{
 
 (function init(){
   $('date_start').valueAsDate = new Date();
+  try{ $('date_start').min = todayISO(); $('date_end').min = todayISO(); }catch(e){}
   setActive(1);
 })();
 
@@ -1209,6 +1300,12 @@ max-width:480px;width:calc(100% - 40px);padding:22px 20px;display:none;animation
 <style>
 @keyframes fadeIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
 </style>
+
+
+<!-- Optional: Google Maps JS (für Autocomplete & Distance Matrix) -->
+<!--
+<script async src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places"></script>
+-->
 
 </body>
 </html>
