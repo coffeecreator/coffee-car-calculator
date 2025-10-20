@@ -1,362 +1,204 @@
+
 <!doctype html>
 <html lang="de">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Coffee-Car Preiskalkulator · CI v4 (Bright)</title>
-<style>
-  :root{
-    --mint:#8BC4B5; --mint-strong:#5DB6A1; --ink:#1A1F2B; --muted:#6B7280;
-    --bg:#FAFBFC; --card:#FFFFFF; --line:#E6E8EB; --accent:#0F766E; --radius:16px;
-  }
-  *{box-sizing:border-box}
-  body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}
-  .wrap{max-width:1200px;margin:auto;padding:22px}
-  .hero{display:grid;grid-template-columns:1.15fr .85fr;gap:18px;align-items:stretch}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:0 4px 18px rgba(0,0,0,.04)}
-  .title{display:flex;align-items:center;gap:10px}
-  .chip{display:inline-block;padding:6px 10px;border-radius:999px;background:linear-gradient(90deg,#fff,#f4fffb);border:1px solid var(--line);color:var(--accent);font-weight:700}
-  h1{margin:0 0 6px;font-size:clamp(22px,4vw,34px);color:var(--ink)}
-  h2{margin:0 0 10px;font-size:20px;color:var(--accent)}
-  label{display:block;font-weight:700;margin:10px 0 6px;color:var(--ink)}
-  input,select,button,textarea{width:100%;padding:12px;border-radius:12px;border:1px solid var(--line);background:#FFF;color:var(--ink)}
-  input:focus,select:focus,textarea:focus{outline:2px solid var(--mint);outline-offset:1px}
-  input[type="number"]{appearance:textfield}
-  textarea{min-height:96px}
-  .row{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
-  .muted{color:var(--muted)}
-  .badge{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;background:#F0FFFA;border:1px dashed var(--line);color:#0C3F37}
-  .btn{cursor:pointer;font-weight:900;background:linear-gradient(90deg,var(--mint),var(--mint-strong));border:none;color:#083B35}
-  .btn-ghost{background:transparent;border:1px solid var(--line);color:var(--ink);cursor:pointer}
-  .thumbs{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
-  .thumbs img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:14px;border:1px solid var(--line)}
-  .info{display:flex;gap:12px;align-items:flex-start;border-top:1px dashed var(--line);padding-top:12px;margin-top:12px}
-  .info img{width:88px;height:88px;object-fit:cover;border-radius:14px;border:1px solid var(--line);background:#FFF}
-  .footer-note{font-size:12px;color:var(--muted);margin-top:10px}
-  .divider{height:1px;background:linear-gradient(90deg,transparent,var(--mint),transparent);margin:16px 0}
-  dialog{border:1px solid var(--line);border-radius:18px;padding:0}
-  dialog .dlg{padding:18px}
-</style>
+<title>Coffee‑Car Preiskalkulator · v2</title>
+<link rel="stylesheet" href="style.css">
+<meta name="color-scheme" content="light only">
 </head>
 <body>
-<div class="wrap">
-  <div class="hero">
+  <div class="container">
+    <div class="header">
+      <img src="assets/logo-coffee-car.svg" alt="Coffee-Car Logo">
+      <div class="badge">
+        <span>Preiskalkulator</span>
+        <span id="out_days">1</span><span>Tag(e)</span>
+      </div>
+    </div>
+
     <div class="card">
-      <div class="title"><span class="chip">Chois Coffee</span><h1>Coffee-Car Preiskalkulator</h1></div>
-      <p class="muted">Praxisnah. Transparent. Live aus deinem Kalkulations-Sheet.</p>
-      <div class="divider"></div>
+      <h2>1) Basis-Daten</h2>
+      <div class="row">
+        <div class="input">
+          <label>Kundentyp</label>
+          <div class="small">Privat · Gewerbe · Agentur · Behörde</div>
+          <div class="row">
+            <label><input type="radio" name="customer_type" value="Privat" checked> Privat</label>
+            <label><input type="radio" name="customer_type" value="Gewerbe"> Gewerbe</label>
+            <label><input type="radio" name="customer_type" value="Agentur"> Agentur</label>
+            <label><input type="radio" name="customer_type" value="Behörde"> Behörde</label>
+          </div>
+        </div>
+        <div class="input">
+          <label>Gäste (Schätzung)</label>
+          <input id="in_guests" type="number" min="0" placeholder="z. B. 120">
+        </div>
+      </div>
 
       <div class="row">
-        <div><label>Datum (Start)</label><input id="date_start" type="date" required></div>
-        <div><label>Datum (Ende)</label><input id="date_end" type="date" required></div>
-        <div><label>Ausschankbeginn</label><input id="start_time" type="time" value="09:00" required></div>
-        <div><label>Ausschankende</label><input id="end_time" type="time" value="13:00" required></div>
-        <div><label>Gästezahl</label><input id="guests" type="number" min="1" inputmode="numeric" value="90" required></div>
-        <div>
-          <label>Kundentyp</label>
-          <select id="customer_type">
-            <option>Privat</option>
-            <option>Gewerblich</option>
-          </select>
+        <div class="input">
+          <label>Einsatzdauer (Stunden)</label>
+          <input id="in_duration" type="number" min="1" step="0.5" placeholder="z. B. 4">
         </div>
-        <div>
-          <label>Art des Events</label>
-          <select id="event_type"></select>
-          <input id="event_type_other" placeholder="Bitte angeben…" style="display:none;margin-top:8px">
-        </div>
-        <div>
-          <label>Becher / Tassen</label>
-          <select id="cupType">
-            <option>Einwegbecher (100% kompostierbar)</option>
-            <option>Porzellantassen</option>
-            <option>Kunde stellt Tassen</option>
-            <option>Branding-Becher</option>
+        <div class="input">
+          <label>Wochentag</label>
+          <select id="in_weekday">
+            <option>Montag</option><option>Dienstag</option><option>Mittwoch</option>
+            <option>Donnerstag</option><option>Freitag</option><option>Samstag</option><option>Sonntag</option>
           </select>
         </div>
       </div>
 
-      <div id="multiInfo" class="badge" style="display:none; margin-top:8px">
-        Mehrtägiges Event erkannt – bitte Start/Ende je Tag prüfen.
-      </div>
-
-      <div id="daysCard" class="card" style="margin-top:12px; display:none">
-        <h2>Ausschankzeiten je Tag</h2>
-        <div id="daysContainer"></div>
-        <div class="footer-note">Standard sind Beginn/Ende des ersten Tages; pro Tag frei anpassbar.</div>
-      </div>
-
-      <div class="card" style="margin-top:12px">
-        <h2>Zusatzoptionen (Ja/Nein)</h2>
-        <div class="row">
-          <label style="display:flex;align-items:center;gap:10px"><input id="waffles_on" type="checkbox"><span>Waffeln</span></label>
-          <label style="display:flex;align-items:center;gap:10px"><input id="frozencap_on" type="checkbox"><span>Frozen Cappuccino</span></label>
-          <label style="display:flex;align-items:center;gap:10px"><input id="softice_on" type="checkbox"><span>Softeis</span></label>
-          <label style="display:flex;align-items:center;gap:10px"><input id="milkschaum_on" type="checkbox"><span>Milchschaumdrucker</span></label>
+      <div class="row">
+        <div class="input">
+          <label>Startdatum</label>
+          <input id="in_date_start" type="date">
         </div>
-        <div class="info">
-          <img src="waffel.png" alt="Waffeln am Stiel">
-          <div><strong>Waffeln</strong><br>Frische Waffeln am Stiel mit Puderzucker und Schokosoße. ~80 Stück/Stunde.</div>
-        </div>
-        <div class="info">
-          <img src="mercedes.jpg" alt="Frozen Cappuccino">
-          <div><strong>Frozen Cappuccino</strong><br>Cremig-gekühlt – ideal für Sommer-Events.</div>
-        </div>
-        <div class="info">
-          <img src="bulli.jpg" alt="Softeis">
-          <div><strong>Softeis</strong><br>Vanille oder Schoko. Vanilleeis perfekt für <em>Affogato</em>.</div>
-        </div>
-        <div class="info">
-          <img src="milkschaum.jpg" alt="Milchschaumdrucker">
-          <div><strong>Milchschaumdrucker</strong><br>Tagespauschale inkl. Druckflatrate. Logos, Motive oder Texte direkt auf Milchschaum.</div>
+        <div class="input">
+          <label>Startzeit</label>
+          <input id="in_time_start" type="time">
         </div>
       </div>
 
-      <div class="card" style="margin-top:12px">
-        <h2>Branding-Optionen (nur für Gewerbekunden)</h2>
-        <div id="b2bBlock" class="row">
-          <label style="display:flex;align-items:center;gap:10px"><input id="branding_setup_on" type="checkbox"><span>Branding Setup <span class="muted">(Preis auf Anfrage)</span></span></label>
-          <label style="display:flex;align-items:center;gap:10px"><input id="branding_becher_on" type="checkbox"><span>Branding-Becher <span class="muted">(Preis auf Anfrage)</span></span></label>
+      <div class="row">
+        <div class="input">
+          <label>Enddatum</label>
+          <input id="in_date_end" type="date">
         </div>
-        <div class="footer-note">Branding-Optionen werden protokolliert und individuell angeboten (keine automatische Preisberechnung).</div>
+        <div class="input">
+          <label>Endzeit</label>
+          <input id="in_time_end" type="time">
+        </div>
+      </div>
+      <div class="lock">
+        <label><input id="lock_dates" type="checkbox"> Enddatum/-zeit automatisch = Start (empfohlen)</label>
       </div>
 
-      <div style="display:flex; gap:10px; margin-top:14px">
-        <button id="calc" class="btn">Preis berechnen</button>
-        <button class="btn-ghost" id="reset">Zurücksetzen</button>
-        <button class="btn-ghost" id="cta">Unverbindlich anfragen</button>
+      <div class="row">
+        <div class="input">
+          <label>Ausschank</label>
+          <select id="in_serving">
+            <option>Tassen</option>
+            <option>Becher</option>
+          </select>
+        </div>
+        <div class="input">
+          <label>Veranstaltungsadresse / PLZ / Ort</label>
+          <input id="in_address" type="text" placeholder="Straße Nr., PLZ Ort – mind. 3 Zeichen">
+        </div>
       </div>
-      <div id="res" class="badge" style="margin-top:12px">Noch kein Ergebnis.</div>
-      <div class="footer-note">Privatkunden sehen Brutto, Gewerbliche Netto. Add-ons gelten als Tagespauschalen.</div>
     </div>
 
     <div class="card">
-      <h2>Bilder & Impressionen</h2>
-      <div class="thumbs">
-        <img src="fleet.jpg" alt="Coffee-Car Flotte">
-        <img src="mercedes.jpg" alt="Mercedes Bar">
-        <img src="ape.jpg" alt="Ape Kaffee Setup">
+      <h2>2) Zusatzoptionen (Mehrfachauswahl)</h2>
+      <div class="grid-addons">
+        <label class="addon">
+          <img src="assets/waffeln.svg" alt="Waffeln am Stiel">
+          <div class="meta"><div>Waffeln am Stiel</div><input type="checkbox" data-key="waffeln"></div>
+        </label>
+        <label class="addon">
+          <img src="assets/softeis.svg" alt="Softeis">
+          <div class="meta"><div>Softeis</div><input type="checkbox" data-key="softeis"></div>
+        </label>
+        <label class="addon">
+          <img src="assets/latteart.svg" alt="Latte-Art">
+          <div class="meta"><div>Latte-Art Show</div><input type="checkbox" data-key="latteart"></div>
+        </label>
+        <label class="addon">
+          <img src="assets/kakaobar.svg" alt="Kakao">
+          <div class="meta"><div>Kakao/Schoko</div><input type="checkbox" data-key="kakaobar"></div>
+        </label>
+        <label class="addon">
+          <img src="assets/sirup.svg" alt="Sirup">
+          <div class="meta"><div>Sirup-Auswahl</div><input type="checkbox" data-key="sirup"></div>
+        </label>
       </div>
-      <div class="divider"></div>
-      <h2>Porzellan-Service</h2>
-      <div class="info">
-        <img src="ape.jpg" alt="Porzellan">
-        <div>Ausschank in <strong>Porzellantassen</strong> inkl. <strong>Unterteller</strong>, <strong>Löffel</strong> & <strong>Spülen</strong>.</div>
-      </div>
+      <p class="small">Hinweis: „Softeis“ ist ein Produkt (keine Theke) – Bild korrekt zugeordnet.</p>
     </div>
-  </div>
+
+    <div class="card">
+      <h2>3) Ergebnis</h2>
+      <div class="footer">
+        <div>
+          <div class="small">Gesamt (netto, inkl. Anfahrt)</div>
+          <div id="out_price_net" class="price">–</div>
+          <div id="out_trip_info" class="small"></div>
+        </div>
+        <div>
+          <div class="small">Gesamt (brutto, 19% USt)</div>
+          <div id="out_price_brut" class="price">–</div>
+        </div>
+        <div style="display:flex; gap:8px; align-items:center">
+          <button id="btn_check" class="btn secondary" type="button">Verfügbarkeit prüfen</button>
+          <button id="btn_submit" class="btn" type="button">Anfrage senden</button>
+        </div>
+      </div>
+      <div class="small" id="avail_result"></div>
+      <div class="small" id="submit_result"></div>
+    </div>
+
+    <div class="card section">
+      <h2>Wir über uns</h2>
+      <p>Wir sind Coffee‑Car – mobile Kaffeeprofis für Events aller Größen. 
+Seit 2017 bringen wir Spezialitätenkaffee, Barista‑Know‑how und reibungslose Abläufe zu 
+Messen, Firmenfeiern, Kongressen und Privatveranstaltungen. Unsere geschulten Baristi, 
+faire Löhne, nachhaltige Zutaten und eine große Auswahl an Milchalternativen sorgen 
+für begeisterte Gäste und entspannte Gastgeber.</p>
+    </div>
+
+    <div class="card section">
+      <h2>FAQ</h2>
+      <div class="faq-item"><details><summary>Wie schnell erhalte ich ein Angebot?</summary><p class="small">In der Regel innerhalb von 24 Stunden. Bei kurzfristigen Terminen melden wir uns noch am selben Tag.</p></details></div>
+<div class="faq-item"><details><summary>Welche Informationen benötigt ihr für ein Angebot?</summary><p class="small">Datum, Uhrzeit, Einsatzdauer, Gästezahl, Veranstaltungsadresse und besondere Wünsche (z. B. Milchalternativen, Branding).</p></details></div>
+<div class="faq-item"><details><summary>Gibt es eine Mindestabnahme?</summary><p class="small">Nein – wir kalkulieren fair nach Dauer, Wochentag, Gästezahl und gewünschtem Angebot.</p></details></div>
+<div class="faq-item"><details><summary>Bringt ihr alles mit?</summary><p class="small">Ja, inkl. Maschine, Mühle, Wasser, Becher/Tassen (je nach Auswahl) und Verbrauchsmaterial. Stromanschluss nach Absprache.</p></details></div>
+<div class="faq-item"><details><summary>Können wir eigene Becher verwenden?</summary><p class="small">Gerne. Wählt im Kalkulator „Becher“ oder „Tassen“ und teilt uns im Hinweisfeld euren Wunsch mit.</p></details></div>
+<div class="faq-item"><details><summary>Wie berechnen sich die Fahrtkosten?</summary><p class="small">Die kürzeste Strecke vom nächstgelegenen Standort (Stuttgart, Frankfurt, Singen, München, Düsseldorf). Ab km 31 berechnen wir 0,65 €/km.</p></details></div>
+<div class="faq-item"><details><summary>Bietet ihr vegane Optionen an?</summary><p class="small">Ja, wir haben mehrere Milchalternativen und vegane Schokoladen‑Optionen.</p></details></div>
+<div class="faq-item"><details><summary>Können wir ein Branding bekommen?</summary><p class="small">Ja, von Logo‑Tassen bis Beachflags – gern beraten wir euch.</p></details></div>
+<div class="faq-item"><details><summary>Wie viele Baristi kommen?</summary><p class="small">Das hängt von Gästen & Durchsatz ab. Ab ~120 Gästen empfehlen wir eine zweite Person.</p></details></div>
+<div class="faq-item"><details><summary>Bis wann kann ich stornieren?</summary><p class="small">Unsere Stornofristen stehen im Angebot. Wir sind kulant und versuchen immer eine faire Lösung zu finden.</p></details></div>
+    </div>
+
+    <footer>
+      <nav>
+        <a href="#impressum">Impressum</a>
+        <a href="#datenschutz">Datenschutz</a>
+      </nav>
+      <div>© 2025 Coffee‑Car · Alle Rechte vorbehalten</div>
+    </footer>
+
+    <div id="impressum" class="card section"><h3>Impressum</h3><p class="small">Coffee-Car GmbH · Theodor-Heuss-Allee 112 · 60486 Frankfurt am Main · Deutschland</p><p class="small">Geschäftsführer: Alkan Kurdes · Registergericht: AG Frankfurt am Main – HRB 128817</p><p class="small">E-Mail: info@coffee-car.com · Tel. +49 711 219535609</p></div>
+
+    <div id="datenschutz" class="card section">
+<h3>Datenschutz</h3>
+<p class="small">
+Verantwortlich: Coffee-Car GmbH, Theodor-Heuss-Allee 112, 60486 Frankfurt am Main, Deutschland.
+Kontakt: info@coffee-car.com · Tel. +49 711 219535609.
+</p>
+<p class="small">
+Wir verarbeiten personenbezogene Daten (z. B. Name, E-Mail, Telefon, Veranstaltungsadresse) ausschließlich zur
+Angebotserstellung, Kommunikation und Durchführung des Caterings (Art. 6 Abs. 1 lit. b DSGVO). Bei Nutzung des
+Preisrechners werden eingegebene Daten an unseren Auftragsverarbeiter (Google Apps Script/Google Cloud) übertragen,
+um die Kalkulation und Verfügbarkeitsprüfung zu ermöglichen. Eine Weitergabe an weitere Dritte erfolgt nur, wenn es
+zur Vertragserfüllung erforderlich ist oder gesetzliche Pflichten bestehen.
+</p>
+<p class="small">
+Speicherdauer: Wir speichern Daten nur so lange, wie es für die genannten Zwecke erforderlich ist (gesetzliche
+Aufbewahrungsfristen bleiben unberührt).
+</p>
+<p class="small">
+Ihre Rechte: Sie haben das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung der Verarbeitung, Widerspruch
+sowie Datenübertragbarkeit (Art. 15–21 DSGVO). Sie können sich jederzeit bei einer Aufsichtsbehörde beschweren.
+</p>
+<p class="small">
+Anfragen zum Datenschutz richten Sie bitte an: datenschutz@coffee-car.com
+</p>
 </div>
 
-<script>
-const API = "https://script.google.com/macros/s/AKfycbx6ZY9exdi8AA3VnZhQJ7PTrK3KESP23QMheZTypVQAFuGDzySIptU5aAHBUoWl-_hc/exec";
-const EVENT_OPTIONS = {
-  'Privat': ['Hochzeit','Geburtstag','Sonstige'],
-  'Gewerblich': ['Messe','Kongress','Mitarbeiterfest','Promotion','Jubiläum','Eröffnungsfeier','Sonstige']
-};
-const $ = sel => document.querySelector(sel);
-
-function enumerateDates(startStr, endStr){
-  const out=[]; if(!startStr) return out;
-  const start=new Date(startStr);
-  const end=endStr?new Date(endStr):new Date(startStr);
-  let d=new Date(Date.UTC(start.getFullYear(),start.getMonth(),start.getDate()));
-  const endUTC=Date.UTC(end.getFullYear(),end.getMonth(),end.getDate());
-  while(d.getTime()<=endUTC){ out.push(new Date(d)); d.setUTCDate(d.getUTCDate()+1) }
-  return out;
-}
-function fmtISO(d){
-  const y=d.getUTCFullYear(), m=String(d.getUTCMonth()+1).padStart(2,'0'), da=String(d.getUTCDate()).padStart(2,'0');
-  return `${y}-${m}-${da}`;
-}
-function ensureTimeOrder(startVal, endVal){
-  if(!startVal||!endVal) return [startVal||"09:00", endVal||"13:00"];
-  return (startVal>endVal) ? [startVal,startVal] : [startVal,endVal];
-}
-
-function rebuildDayRows(){
-  const ds=$('#date_start').value;
-  const de=$('#date_end').value || ds;
-  const st=$('#start_time').value || '09:00';
-  const et=$('#end_time').value || '13:00';
-
-  $('#date_end').min = ds || '';
-  if(de < ds) $('#date_end').value = ds;
-
-  const dates=enumerateDates(ds,de);
-  const card=$('#daysCard');
-  const info=$('#multiInfo');
-  const cont=$('#daysContainer'); cont.innerHTML='';
-
-  if(dates.length<=1){ card.style.display='none'; info.style.display='none'; return; }
-  card.style.display=''; info.style.display='';
-
-  dates.forEach(d=>{
-    const [sFix,eFix]=ensureTimeOrder(st,et);
-    const dateISO=fmtISO(d);
-    const row=document.createElement('div'); row.className='row';
-    row.innerHTML = `
-      <div><label class="muted">Datum</label><input type="date" value="${dateISO}" data-role="date" readonly></div>
-      <div><label class="muted">Start</label><input type="time" value="${sFix}" data-role="start"></div>
-      <div><label class="muted">Ende</label><input type="time" value="${eFix}" data-role="end"></div>
-    `;
-    row.addEventListener('change', ()=>{
-      const startI = row.querySelector('[data-role="start"]');
-      const endI   = row.querySelector('[data-role="end"]');
-      const [s2,e2]=ensureTimeOrder(startI.value,endI.value);
-      startI.value = s2; endI.value = e2;
-    });
-    cont.appendChild(row);
-  });
-}
-
-function toggleB2B(){
-  const ct=$('#customer_type').value;
-  $('#b2bBlock').parentElement.style.display=(ct==='Gewerblich')?'':'none';
-  refreshEventTypes();
-}
-function refreshEventTypes(){
-  const ct=$('#customer_type').value||'Privat';
-  const sel=$('#event_type'); const other=$('#event_type_other');
-  sel.innerHTML='';
-  (EVENT_OPTIONS[ct]||[]).forEach(v=>{
-    const o=document.createElement('option'); o.value=v; o.textContent=v; sel.appendChild(o);
-  });
-  other.style.display=(sel.value==='Sonstige')?'':'none';
-}
-document.addEventListener('change', (e)=>{
-  if(e.target && e.target.id==='event_type'){
-    $('#event_type_other').style.display=(e.target.value==='Sonstige')?'':'none';
-  }
-});
-
-(function init(){
-  const today = new Date(); const iso = today.toISOString().slice(0,10);
-  $('#date_start').value = iso;
-  $('#date_start').min   = iso;
-  $('#date_end').value   = '';
-  $('#date_end').min     = iso;
-
-  toggleB2B();
-  rebuildDayRows();
-
-  ['date_start','date_end','start_time','end_time'].forEach(id=> {
-    document.getElementById(id).addEventListener('change', rebuildDayRows);
-  });
-})();
-
-async function calculate(){
-  const ds=$('#date_start').value, de=$('#date_end').value || ds;
-  const st=$('#start_time').value, et=$('#end_time').value;
-  const guests=$('#guests').value;
-  const ct=$('#customer_type').value;
-  const evSel=$('#event_type').value;
-  const evType=(evSel==='Sonstige' ? ($('#event_type_other').value||'Sonstige') : evSel);
-
-  if(!ds || !st || !et || !guests){ $('#res').textContent='Bitte Datum, Zeiten und Gästezahl angeben.'; return; }
-  if(de < ds){ $('#res').textContent='Enddatum darf nicht vor dem Startdatum liegen.'; return; }
-  if(st > et){ $('#res').textContent='Ausschankende darf nicht vor Beginn liegen.'; return; }
-
-  const rows = Array.from(document.querySelectorAll('#daysContainer .row'));
-  const dayTimes = rows.map(r=>{
-    const d = r.querySelector('[data-role="date"]').value;
-    const s = r.querySelector('[data-role="start"]').value;
-    const e = r.querySelector('[data-role="end"]').value;
-    const [s2,e2]=ensureTimeOrder(s,e);
-    return {date:d,start:s2,end:e2};
-  });
-
-  const params=new URLSearchParams({
-    date_start:ds, date_end:de, start_time:st, end_time:et,
-    guests:guests, customer_type:ct, event_type:evType,
-    cupType:$('#cupType').value,
-    waffles_on:$('#waffles_on').checked?'1':'0',
-    frozencap_on:$('#frozencap_on').checked?'1':'0',
-    softice_on:$('#softice_on').checked?'1':'0',
-    milkschaum_on:$('#milkschaum_on').checked?'1':'0',
-    branding_setup_on:$('#branding_setup_on').checked?'1':'0',
-    branding_becher_on:$('#branding_becher_on').checked?'1':'0',
-    day_times: JSON.stringify(dayTimes)
-  });
-
-  const resBox=$('#res'); resBox.textContent='Rechne …';
-  try{
-    const r = await fetch(`${API}?${params.toString()}`, {method:'GET',mode:'cors'});
-    const j = await r.json();
-    if(!j.ok) throw new Error(j.error||'Unbekannter Fehler');
-    resBox.textContent = `Preis (${ct}): ${j.result.price} — Wochentag: ${j.result.weekday}`;
-  }catch(e){
-    resBox.textContent = 'Fehler: '+ e.message;
-  }
-}
-document.getElementById('calc').addEventListener('click', calculate);
-
-document.getElementById('reset').addEventListener('click', ()=>{
-  ['waffles_on','frozencap_on','softice_on','milkschaum_on','branding_setup_on','branding_becher_on'].forEach(id=>{ document.getElementById(id).checked=false; });
-  $('#cupType').selectedIndex=0;
-  $('#customer_type').selectedIndex=0;
-  refreshEventTypes();
-  $('#res').textContent='Noch kein Ergebnis.';
-});
-
-function promptLead(){
-  const html=`
-  <div class="dlg" style="display:grid;gap:10px">
-    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
-      <h3 style="margin:0">Unverbindliche Anfrage</h3>
-      <button id="lead_cancel" class="btn-ghost" style="padding:6px 10px">Schließen</button>
-    </div>
-    <div class="row">
-      <div><label>Name</label><input id="lead_name" placeholder="Max Mustermann" required></div>
-      <div><label>E-Mail</label><input id="lead_email" type="email" placeholder="max@firma.de" required></div>
-    </div>
-    <div class="row">
-      <div><label>Telefon</label><input id="lead_phone" placeholder="+49 ..." inputmode="tel"></div>
-      <div><label>Firma (optional)</label><input id="lead_company" placeholder="Firma/Organisation"></div>
-    </div>
-    <div><label>Eventort</label><input id="lead_location" placeholder="Straße, PLZ Ort" required></div>
-    <div><label>Bemerkung</label><textarea id="lead_note" placeholder="Besondere Wünsche, Zeitfenster, Zufahrt, ..."></textarea></div>
-    <div style="display:flex;gap:8px;justify-content:flex-end">
-      <button class="btn" id="lead_send">Senden</button>
-    </div>
-  </div>`;
-  const dlg=document.createElement('dialog'); dlg.innerHTML=html; document.body.appendChild(dlg); dlg.showModal();
-  dlg.querySelector('#lead_cancel').addEventListener('click', ()=>{ dlg.close(); dlg.remove(); });
-  dlg.querySelector('#lead_send').addEventListener('click', async ()=>{
-    const name = document.getElementById('lead_name').value.trim();
-    const email= document.getElementById('lead_email').value.trim();
-    const loc  = document.getElementById('lead_location').value.trim();
-    if(!name || !email || !loc){ alert('Bitte Name, E-Mail und Eventort ausfüllen.'); return; }
-
-    const params=new URLSearchParams({
-      mode:'lead',
-      name, email,
-      phone:document.getElementById('lead_phone').value,
-      company:document.getElementById('lead_company').value,
-      location:loc,
-      note:document.getElementById('lead_note').value,
-      date_start:document.getElementById('date_start').value,
-      date_end:document.getElementById('date_end').value || document.getElementById('date_start').value,
-      start_time:document.getElementById('start_time').value,
-      end_time:document.getElementById('end_time').value,
-      guests:document.getElementById('guests').value,
-      customer_type:document.getElementById('customer_type').value,
-      event_type:(document.getElementById('event_type').value==='Sonstige'? (document.getElementById('event_type_other').value||'Sonstige') : document.getElementById('event_type').value),
-      cupType:document.getElementById('cupType').value,
-      waffles_on:document.getElementById('waffles_on').checked?'1':'0',
-      frozencap_on:document.getElementById('frozencap_on').checked?'1':'0',
-      softice_on:document.getElementById('softice_on').checked?'1':'0',
-      milkschaum_on:document.getElementById('milkschaum_on').checked?'1':'0',
-      branding_setup_on:document.getElementById('branding_setup_on').checked?'1':'0',
-      branding_becher_on:document.getElementById('branding_becher_on').checked?'1':'0'
-    });
-    try{
-      const r=await fetch(`${API}?${params.toString()}`,{method:'GET',mode:'cors'});
-      const j=await r.json();
-      if(j.ok){ dlg.close(); dlg.remove(); alert('Danke! Wir melden uns kurzfristig mit einem Angebot.'); }
-      else{ alert('Fehler: '+(j.error||'Unbekannt')); }
-    }catch(e){ alert('Fehler: '+e.message); }
-  });
-}
-document.getElementById('cta').addEventListener('click', promptLead);
-</script>
+  </div>
+  <script src="app.js"></script>
 </body>
 </html>
