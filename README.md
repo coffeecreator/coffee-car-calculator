@@ -1,65 +1,38 @@
-# ☕ Coffee-Car Kalkulator
+# Coffee-Car Calculator – Deploy Bundle
 
-**Coffee-Car GmbH – Professionelles Coffee-Catering & Barista-Service**
+Dieses Paket enthält:
+- `index.html` – Frontend (DSGVO, Autocomplete, Preis, Anfrage-Formular)
+- `CoffeeCar_Backend_Final.gs` – Google Apps Script Backend (Proxy + Pricing + Logging + Auto-Reply + ICS)
+- `pricing_template.xlsx` / `pricing_template.csv` – Preiskonfigurations-Vorlage (Tab: `Pricing`)
+- `CoffeeCar_Dashboard.xlsx` – Dashboard-Vorlage zur Auswertung
 
-Der Coffee-Car Kalkulator ist ein webbasiertes Tool zur schnellen und transparenten Preisermittlung für Coffee-Car Events.  
-Die Anwendung greift live auf ein Google Sheet zu, in dem alle Preisparameter (Add-ons, Tagespauschalen, MwSt. usw.) gepflegt werden.  
-Dadurch können Kunden, Partner oder Mitarbeiter in Echtzeit den Preis für Events kalkulieren – getrennt nach **Privat-** und **Gewerbekunden**.
+## Einrichtung (Kurz)
 
----
+1) **Apps Script**
+   - https://script.google.com → Neues Projekt → Code aus `CoffeeCar_Backend_Final.gs` einfügen
+   - Projekt-Eigenschaften → Script-Properties setzen:
+     - `MAPS_API_KEY` = dein Google Maps Key (Places + Distance Matrix aktiv)
+     - `SHEET_ID` = ID des Anfragen-Sheets
+     - `PRICES_SHEET_ID` = (optional) ID des Pricing-Sheets
+   - Deployment → **Als Web-App** (Ausführen als: *Ich*, Zugriff: *Jeder*) → URL kopieren
 
-## 🚀 Funktionen
+2) **Frontend**
+   - `index.html` öffnen → `const GAS_ENDPOINT = "..."` mit Web-App-URL ersetzen
+   - Datei ins GitHub-Repo (gh-pages) hochladen/ersetzen
 
-- Dynamische Preisberechnung über Google Apps Script (Web-API)  
-- Echtzeit-Anbindung an das Coffee-Car-Kalkulations-Sheet  
-- Unterschiedliche Preislogik für Privat & Gewerbe  
-- Add-ons (Waffeln, Frozen Cappuccino, Softeis, Milchschaumdrucker)  
-- Branding-Optionen für Gewerbekunden (auf Anfrage)  
-- Eventtyp-Auswahl (Hochzeit, Messe, Promotion etc.)  
-- CTA-Formular „Unverbindlich anfragen“ mit Lead-Erfassung im Sheet  
+3) **Pricing**
+   - `pricing_template.xlsx` nach Google Sheets hochladen → Tab „Pricing“
+   - Sheet-ID in Script-Property `PRICES_SHEET_ID` eintragen
 
----
+4) **Dashboard**
+   - `CoffeeCar_Dashboard.xlsx` nach Google Sheets hochladen
+   - Datenbereich `Anfragen!A2:Q` referenziert die vom Backend geloggten Spalten
 
-## 🧩 Deployment über GitHub Pages
+## Test
+- Adresse tippen → Autocomplete
+- „Verfügbarkeit prüfen“ → Basis/Distanz/Minuten
+- Werte eingeben → Preis erscheint live
+- „Angebot sichern“ → E-Mail an `info@coffee-car.com` + Auto-Antwort (mit ICS) + Eintrag im Sheet
 
-### 1️⃣ Dateien hochladen
-
-1. Gehe zu **https://github.com/coffeecreator/coffee-car-calculator**
-2. Klicke auf **Add file → Upload files**
-3. Ziehe alle Dateien aus deinem Projektordner hinein:
-   - `index.html`
-   - `ape.jpg`, `bulli.jpg`, `mercedes.jpg`, `milkschaum.jpg`, `waffel.png`
-4. Ganz unten auf **Commit changes** klicken
-
----
-
-### 2️⃣ Veröffentlichung aktivieren
-
-1. Oben auf **Settings → Pages**
-2. Unter **Build and deployment**:
-   - **Source:** „Deploy from a branch“
-   - **Branch:** `main` + Ordner `/ (root)`
-   - **Save**
-3. Nach ca. 30 Sekunden ist die Seite online unter:  
-   👉 **https://coffeecreator.github.io/coffee-car-calculator/**
-
----
-
-## ⚙️ Technische Hinweise
-
-- API-Verbindung über:  
-  `https://script.google.com/macros/s/AKfycbzVZlwrVhJRISZHMmcbbE-Qy8CXGSPALcLogLpXHYCyWaKMsmxgdH6rm_uPWseVfGjC/exec`
-- Zugriff im Google Apps Script: **„Jeder“** (öffentlich, ohne Login)
-- Eventuelle Anpassungen an Preisen/Logik erfolgen ausschließlich im verbundenen Google Sheet  
-
----
-
-## 🧑‍💼 Kontakt
-
-**Coffee-Car GmbH**  
-Professionelles Coffee-Catering & Barista-Service  
-[www.coffee-car.com](https://www.coffee-car.com)
-
----
-
-© 2025 Coffee-Car GmbH – alle Rechte vorbehalten.
+## Support
+Fragen? info@coffee-car.com

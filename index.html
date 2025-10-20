@@ -3,295 +3,406 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Coffee-Car · Professionelles Coffee-Catering</title>
-<meta name="color-scheme" content="light">
+<title>Coffee-Car · Preisrechner & Anfrage</title>
+<meta name="description" content="Professionelles Coffee-Catering: Espresso, Cappuccino, Flat White. Termin prüfen, Preis kalkulieren & unverbindlich anfragen.">
+<link rel="icon" href="favicon.svg">
 <style>
-  :root{
-    --mint:#6bd1b3; --mint-2:#39b99a;
-    --ink:#0f2722; --ink-70:#40524f;
-    --bg:#f7faf9; --card:#ffffff; --muted:#6b7c78;
-    --ok:#16794b; --danger:#b02a37;
-    --shadow:0 10px 30px rgba(0,0,0,.06);
-    --radius:16px;
-  }
-  *{box-sizing:border-box}
-  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial}
-  a{color:var(--mint-2);text-decoration:none}
-  .wrap{max-width:1000px;margin:0 auto;padding:16px}
-  header{display:flex;gap:12px;align-items:center}
-  .logo{width:56px;height:56px;display:grid;place-items:center;border-radius:50%;background:#fff;box-shadow:var(--shadow)}
-  .logo svg{width:40px;height:40px}
-  h1{font-size:22px;margin:0}
-  small.sub{display:block;color:var(--muted)}
-  .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;margin:14px 0}
-  .hero{padding:0;overflow:hidden}
-  .hero-img{width:100%;height:260px;background:linear-gradient(120deg,#eaf6f2,#f8fbfa)}
-  .hero-caption{display:flex;gap:10px;flex-wrap:wrap;padding:12px}
-  .badge{display:inline-flex;align-items:center;gap:8px;background:#eef7f5;border:1px solid #d8efe9;color:var(--ink);padding:8px 12px;border-radius:999px;font-weight:600}
-  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  @media (max-width:760px){.grid{grid-template-columns:1fr}}
-  label{font-weight:600;font-size:14px;margin-bottom:6px;display:block}
-  input,select,textarea{width:100%;padding:12px 14px;border-radius:12px;border:1px solid #d9e7e3;background:#fff;outline:none}
-  input:focus,select:focus,textarea:focus{border-color:var(--mint-2);box-shadow:0 0 0 3px rgba(57,185,154,.18)}
-  .row{display:flex;flex-wrap:wrap;gap:10px}
-  .pill{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;border:1px solid #d9e7e3;background:#fff;color:var(--ink-70);font-weight:600}
-  .btn{appearance:none;border:0;border-radius:12px;padding:12px 16px;font-weight:700;background:var(--mint-2);color:#fff;cursor:pointer}
-  .btn:disabled{opacity:.6;cursor:not-allowed}
-  .btn-outline{background:#fff;border:1px solid #cfe7e1;color:#1d5a4b}
-  .hint{color:var(--muted)}
-  .ok{color:var(--ok)} .error{color:var(--danger)}
-  .hidden{display:none!important}
-  .section-title{font-size:20px;margin:0 0 6px}
-  .success{background:#e7f7ef;border:1px solid #cceede;border-radius:12px;padding:12px}
+:root{
+  --bg:#ffffff; --fg:#0f172a; --muted:#64748b; --brand:#10b981; --brand-2:#0ea5e9; --line:#e2e8f0;
+  --card:#f8fafc; --ok:#16a34a; --warn:#f59e0b; --err:#ef4444; --pill:#ecfeff; --pillb:#bae6fd;
+  --radius:16px; --overlay: rgba(15,23,42,.6);
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:ui-sans-serif,system-ui,Segoe UI,Roboto,Helvetica,Arial;color:var(--fg);background:var(--bg)}
+a{color:#0ea5e9;text-decoration:none} a:hover{text-decoration:underline}
+header{border-bottom:1px solid var(--line);background:linear-gradient(180deg,#fff,#f8fafc)}
+.wrap{max-width:980px;margin:0 auto;padding:0 16px}
+.hero{position:relative;overflow:hidden}
+.hero .wrap{padding:28px 16px 14px}
+.h1{font-size:32px;font-weight:800;margin:0}
+.sub{color:var(--muted);font-size:14px;margin-top:6px}
+.hero-img{position:absolute;right:-40px;top:-20px;opacity:.08;filter:contrast(1.1)}
+main{padding:20px 0 64px}
+section{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px;margin:14px 0}
+h2{margin:0 0 10px 0;font-size:18px}
+.row{display:grid;gap:12px} @media(min-width:720px){.row{grid-template-columns:repeat(12,1fr)}}
+label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
+input,select,textarea,button{width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:#fff;font-size:14px}
+input:focus,select:focus,textarea:focus{outline:3px solid #dbeafe;border-color:#93c5fd}
+button{cursor:pointer;font-weight:700} .btn{background:var(--brand);color:#fff;border:0} .btn.secondary{background:var(--brand-2)}
+.status{font-size:14px;margin-top:8px} .status.ok{color:var(--ok)} .status.warn{color:var(--warn)} .status.err{color:var(--err)}
+.badge{display:inline-block;padding:6px 10px;border-radius:999px;background:#eef2ff;color:#334155;font-size:12px}
+.totals{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+.totals .pill{background:var(--pill);border:1px solid var(--pillb);padding:8px 10px;border-radius:999px}
+.grid-6{grid-column:span 12}@media(min-width:720px){.grid-6{grid-column:span 6}}
+.grid-4{grid-column:span 12}@media(min-width:720px){.grid-4{grid-column:span 4}}
+.grid-3{grid-column:span 12}@media(min-width:720px){.grid-3{grid-column:span 3}}
+.grid-12{grid-column:span 12}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid var(--line);border-radius:999px;padding:8px 12px;cursor:pointer;user-select:none}
+.chip.on{background:#dcfce7;border-color:#86efac}
+.pricebox{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.price{font-size:20px;font-weight:800}
+.breakdown{font-size:13px;color:var(--muted)}
+footer{padding:24px 16px;border-top:1px solid var(--line);color:var(--muted);font-size:13px}
+.modal{position:fixed;inset:0;display:none;align-items:flex-start;justify-content:center;background:var(--overlay);z-index:50}
+.modal.on{display:flex}
+.modal .card{background:#fff;border-radius:16px;border:1px solid var(--line);margin-top:5vh;max-width:860px;width:92%;padding:18px;box-shadow:0 10px 30px rgba(0,0,0,.15);max-height:90vh;overflow:auto}
+.modal .card h3{margin:0 0 8px 0}
+.muted{color:var(--muted)}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header>
-    <div class="logo" aria-label="Coffee-Car">
-      <svg viewBox="0 0 64 64" fill="none">
-        <path d="M8 36c6-14 42-14 48 0" stroke="#39b99a" stroke-width="6" stroke-linecap="round"/>
-        <circle cx="14" cy="42" r="4" fill="#39b99a"/><circle cx="50" cy="42" r="4" fill="#39b99a"/>
-      </svg>
-    </div>
-    <div>
-      <h1>Coffee-Car</h1>
-      <small class="sub">Professionelles Coffee-Catering</small>
+  <header class="hero">
+    <img class="hero-img" alt="" width="700" height="400"
+      src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='800' height='400'><rect width='100%' height='100%' fill='%23f8fafc'/><circle cx='620' cy='70' r='120' fill='%23ddd' opacity='0.6'/></svg>">
+    <div class="wrap">
+      <h1 class="h1">Coffee-Car</h1>
+      <div class="sub">Professionelles Coffee-Catering · Espresso · Cappuccino · Flat White</div>
+      <div id="summary" class="sub" style="margin-top:10px">
+        Termin: <span id="s-date">–</span> bis <span id="s-date-end">–</span>
+        (<span id="s-days">0</span> Tag/e) · Ort: <span id="s-loc">–</span> · Segment: <span id="s-seg">–</span> ·
+        <span class="badge" id="s-availability">Verfügbarkeit: unbekannt</span> · Preis: <span id="s-price">–</span>
+      </div>
     </div>
   </header>
 
-  <section class="card hero" aria-labelledby="heroTitle">
-    <div class="hero-img" id="heroImg" role="img" aria-label="Cappuccino mit Latte-Art"></div>
-    <div class="hero-caption">
-      <span class="badge">Professionelles Coffee-Catering</span>
-      <span class="badge">Espresso · Cappuccino · Flat White · u. v. m.</span>
-    </div>
-  </section>
+  <main class="wrap">
 
-  <!-- Zusammenfassung -->
-  <section class="card">
-    <div class="row" style="gap:8px">
-      <span class="pill">Termin: <strong id="badgeDate">– bis – (0 Tag/e)</strong></span>
-      <span class="pill">Ort: <strong id="badgeCity">–</strong></span>
-      <span class="pill">Segment: <strong id="badgeSeg">–</strong></span>
-      <span class="pill">Wichtig: <strong id="out_priority">Qualität &amp; Auftritt</strong></span>
-      <span class="pill">Verfügbarkeit: <strong id="out_availability">unbekannt</strong> / <span id="out_discount">kein Rabatt</span></span>
-      <span class="pill">Preis: <strong id="out_price">–</strong></span>
-    </div>
-  </section>
-
-  <!-- 1) Termin & Ort -->
-  <section class="card" aria-labelledby="s1">
-    <h2 id="s1" class="section-title">1) Wann &amp; Wo findet das Event statt?</h2>
-    <div class="grid">
-      <div>
-        <label for="in_date_start">Datum (Start)</label>
-        <input id="in_date_start" type="date" required>
-      </div>
-      <div>
-        <label for="in_date_end">Datum (Ende)</label>
-        <input id="in_date_end" type="date" required>
-        <small class="hint">= Startdatum (automatisch), bei mehrtägigen Events anpassen.</small>
-      </div>
-      <div>
-        <label for="in_city">Ort / PLZ</label>
-        <input id="in_city" type="text"
-               inputmode="text"
-               autocomplete="address-level2 postal-code"
-               placeholder="z. B. 71549 Auenwald"
-               minlength="2" maxlength="120"
-               pattern="[A-Za-zÄÖÜäöüß0-9 .,\-]{2,120}" required>
-      </div>
-      <div>
-        <label for="in_segment">Segment</label>
-        <select id="in_segment" required>
-          <option value="" disabled selected>Bitte wählen …</option>
-          <option>Privat</option>
-          <option>Gewerbe</option>
-          <option>Agentur</option>
-          <option>Kindergarten/Schule</option>
-          <option>Behörde/Öffentliche Einrichtung</option>
-        </select>
-      </div>
-    </div>
-    <div class="row" style="margin-top:12px">
-      <button id="btnCheck" class="btn" type="button">Verfügbarkeit prüfen</button>
-    </div>
-    <small id="checkMsg" class="hint"></small>
-  </section>
-
-  <!-- 6) Angebot sichern -->
-  <section class="card" aria-labelledby="s6">
-    <h2 id="s6" class="section-title">6) Angebot sichern</h2>
-    <p>Wir senden Ihnen das Angebot per E-Mail zu und reservieren den Termin vorläufig.</p>
-
-    <form id="offerForm" novalidate>
-      <div class="grid">
-        <div>
-          <label for="name">Name</label>
-          <input id="name" autocomplete="name" placeholder="Ihr Name" required>
-        </div>
-        <div>
-          <label for="email">E-Mail</label>
-          <input id="email" type="email" autocomplete="email" placeholder="ihr@mail.de" required>
-        </div>
-        <div>
-          <label for="telefon">Telefon</label>
-          <input id="telefon" type="tel" autocomplete="tel" placeholder="+49…">
-        </div>
-        <div>
-          <label for="notes">Hinweise (optional)</label>
-          <input id="notes" placeholder="z. B. Aufbauzeit, Wunschgetränke, Logo-Becher …">
-        </div>
-      </div>
-
-      <div class="row" style="margin:12px 0">
-        <label class="row" style="gap:8px;align-items:center">
-          <input id="consent" type="checkbox" required>
-          <span>Ich stimme der Verarbeitung meiner Angaben zum Zweck der Angebotserstellung zu.</span>
-        </label>
-      </div>
-
+    <!-- 1) Wann & Wo -->
+    <section>
+      <h2>1) Wann & Wo findet das Event statt?</h2>
       <div class="row">
-        <button type="submit" class="btn" id="btnSubmit">Angebot sichern</button>
+        <div class="grid-3">
+          <label for="date_start">Datum (Start)</label>
+          <input id="date_start" type="date" required>
+        </div>
+        <div class="grid-3">
+          <label for="date_end">Datum (Ende)</label>
+          <input id="date_end" type="date" required>
+          <div class="sub">= Startdatum (auto); bei mehrtägigen Events anpassen.</div>
+        </div>
+        <div class="grid-3">
+          <label for="hours_per_day">Stunden/Tag</label>
+          <input id="hours_per_day" type="number" min="1" max="16" step="1" value="6" inputmode="numeric">
+        </div>
+        <div class="grid-3">
+          <label for="guests">Gästezahl (ca.)</label>
+          <input id="guests" type="number" min="1" step="1" placeholder="z. B. 120" inputmode="numeric">
+        </div>
+        <div class="grid-6">
+          <label for="loc">Ort / PLZ</label>
+          <input id="loc" type="text" inputmode="text" autocomplete="postal-code address-line1"
+                 placeholder="z. B. 70173 Stuttgart oder Musterstraße 1, Stuttgart">
+          <div id="loc_list" class="sub"></div>
+        </div>
+        <div class="grid-3">
+          <label for="segment">Segment</label>
+          <select id="segment">
+            <option value="">Bitte wählen …</option>
+            <option>Privat</option>
+            <option>Gewerbe</option>
+            <option>Agentur</option>
+            <option>Kindergarten/Schule</option>
+            <option>Behörde/Öffentliche Einrichtung</option>
+          </select>
+        </div>
+        <div class="grid-3" style="align-self:end">
+          <button id="btn_check" class="btn secondary">Verfügbarkeit prüfen</button>
+          <div id="avail_status" class="status"></div>
+        </div>
       </div>
 
-      <div id="successBox" class="success hidden" style="margin-top:12px">
-        ✅ Danke! Wir melden uns kurzfristig mit einem Angebot.
+      <div class="totals">
+        <div class="pill">Nächste Basis: <span id="s-base">–</span></div>
+        <div class="pill">Distanz: <span id="s-dist">–</span></div>
+        <div class="pill">Fahrzeit: <span id="s-time">–</span></div>
       </div>
-      <div id="errorBox" class="error hidden" style="margin-top:12px"></div>
+    </section>
 
-      <small class="hint">Hinweis: Versand &amp; Protokollierung über Google Apps Script (in deinem Google-Konto). Widerruf jederzeit per E-Mail möglich.</small>
-    </form>
-  </section>
-</div>
+    <!-- 2) Optionen -->
+    <section>
+      <h2>2) Optionen</h2>
+      <div class="row">
+        <div class="grid-12">
+          <label>Zusatzoptionen (Mehrfachauswahl)</label>
+          <div id="addons" class="chips">
+            <span data-key="waffles" class="chip">Waffeln</span>
+            <span data-key="softice" class="chip">Soft-Ice</span>
+            <span data-key="latteart" class="chip on">Latte-Art</span>
+            <span data-key="milkalts" class="chip on">Milch-Alternativen</span>
+            <span data-key="branding" class="chip">Becher-Branding</span>
+          </div>
+        </div>
+      </div>
+      <div class="pricebox" style="margin-top:10px">
+        <div class="price">Preis: <span id="price_big">–</span></div>
+        <div id="price_note" class="breakdown"></div>
+      </div>
+    </section>
+
+    <!-- 3) Anfrage -->
+    <section>
+      <h2>3) Angebot sichern</h2>
+      <p class="sub">Wir senden Ihnen das Angebot per E-Mail zu und reservieren den Termin vorläufig.</p>
+      <div class="row">
+        <div class="grid-4"><label for="name">Name</label><input id="name" required></div>
+        <div class="grid-4"><label for="email">E-Mail</label><input id="email" type="email" required></div>
+        <div class="grid-4"><label for="phone">Telefon</label><input id="phone" type="tel" inputmode="tel"></div>
+        <div class="grid-12"><label for="notes">Hinweise (optional)</label><textarea id="notes" rows="3"></textarea></div>
+      </div>
+      <div style="display:flex;gap:12px;align-items:center;margin-top:10px">
+        <input id="consent" type="checkbox" required>
+        <label for="consent">Ich stimme der Verarbeitung meiner Angaben zum Zweck der Angebotserstellung zu (<a href="#" data-modal="datenschutz">Details</a>).</label>
+      </div>
+      <div style="margin-top:12px;display:flex;gap:10px">
+        <button id="btn_send" class="btn">Angebot sichern</button>
+        <span id="send_status" class="status"></span>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    <div class="wrap">
+      © 2025 Coffee-Car GmbH · <a href="#" data-modal="impressum">Impressum</a> · <a href="#" data-modal="datenschutz">Datenschutz</a> · Hosting: GitHub Pages
+    </div>
+  </footer>
+
+  <!-- MODAL: Datenschutz -->
+  <div id="modal_datenschutz" class="modal" aria-hidden="true">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;gap:8px;align-items:center">
+        <h3>Datenschutzerklärung</h3>
+        <button class="btn secondary" data-close>Schließen</button>
+      </div>
+      <p class="muted">Stand: 20.10.2025</p>
+      <h4>1. Verantwortlicher</h4>
+      <p><b>Coffee-Car GmbH</b><br>
+      Theodor-Heuss-Allee 112, 60486 Frankfurt am Main, Deutschland<br>
+      E-Mail: <a href="mailto:info@coffee-car.com">info@coffee-car.com</a><br>
+      Telefon: +49 711 219535609</p>
+      <h4>2. Datenkategorien und Zwecke</h4>
+      <p>Wir verarbeiten folgende Daten aus dem Formular: Name, E-Mail, Telefon, Veranstaltungsdaten (Datum/Zeitraum, Ort/Adresse/PLZ, Segment, Hinweise), Gästezahl, Stunden/Tag, gewählte Optionen. Technische Nutzungsdaten entstehen durch die Entfernungsermittlung (Entfernung/Fahrzeit, nächste Basis) und durch die Autovervollständigung von Adressen.</p>
+      <p><b>Zwecke:</b> Angebotserstellung und Kontaktaufnahme, Verfügbarkeitsprüfung (Entfernung/Fahrzeit), interne Planung und Dokumentation (Anfragelog im Google-Sheet), Nachverfolgung und Qualitätssicherung.</p>
+      <h4>3. Rechtsgrundlagen</h4>
+      <ul>
+        <li>Art. 6 Abs. 1 lit. b DSGVO (vorvertragliche Maßnahmen/Vertrag): Bearbeitung Ihrer Anfrage und Angebotserstellung.</li>
+        <li>Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse): Technische Verarbeitung zur Verfügbarkeits-/Entfernungsermittlung, Systemsicherheit und Missbrauchsprävention.</li>
+        <li>Art. 6 Abs. 1 lit. a DSGVO (Einwilligung): soweit Sie uns optional weitergehende Angaben erteilen.</li>
+      </ul>
+      <h4>4. Empfänger / Auftragsverarbeiter</h4>
+      <p>Interne Empfänger: zuständige Mitarbeitende der Coffee-Car GmbH. Externe Empfänger (als Auftragsverarbeiter):</p>
+      <ul>
+        <li><b>Google</b> – Bereitstellung der Web-App (Google Apps Script), Speicherung der Anfragen (Google Sheets), Adress-Autovervollständigung und Entfernungsermittlung (Google Places/Distance Matrix).</li>
+        <li><b>GitHub Pages</b> – Hosting der statischen Webseite.</li>
+      </ul>
+      <h4>5. Drittlandübermittlungen</h4>
+      <p>Bei Nutzung von Google-Diensten und GitHub Pages kann eine Übermittlung in Drittländer (insb. USA) stattfinden. Es gelten geeignete Garantien (z. B. EU-Standardvertragsklauseln).</p>
+      <h4>6. Speicherdauer</h4>
+      <p>Formularanfragen speichern wir grundsätzlich für die Dauer der Angebotsphase und zur Nachverfolgung bis zu 24 Monaten, sofern keine längeren gesetzlichen Aufbewahrungspflichten bestehen.</p>
+      <h4>7. Erforderlichkeit der Bereitstellung</h4>
+      <p>Die als erforderlich gekennzeichneten Angaben sind notwendig, um ein Angebot zu erstellen und den Termin zu prüfen. Ohne diese Angaben kann keine Bearbeitung erfolgen.</p>
+      <h4>8. Automatisierte Entscheidungsfindung/Profiling</h4>
+      <p>Es findet keine automatisierte Entscheidungsfindung im Sinne von Art. 22 DSGVO statt.</p>
+      <h4>9. Ihre Rechte</h4>
+      <ul>
+        <li>Auskunft, Berichtigung, Löschung, Einschränkung, Datenübertragbarkeit, Widerspruch</li>
+        <li>Widerruf erteilter Einwilligungen mit Wirkung für die Zukunft</li>
+        <li>Beschwerderecht bei einer Aufsichtsbehörde</li>
+      </ul>
+      <p>Kontakt: <a href="mailto:info@coffee-car.com">info@coffee-car.com</a></p>
+      <h4>10. Cookies, Analyse und Tracking</h4>
+      <p>Keine Marketing-Cookies, keine Reichweitenanalyse. Autocomplete/Distanzberechnung erfolgt über unseren eigenen Proxy (Google Apps Script) und nur nach Ihrer Eingabe.</p>
+      <h4>11. Hosting und Sicherheit</h4>
+      <p>Seite via GitHub Pages (TLS). Formular sendet per HTTPS an unsere Google-Apps-Script-Web-App. API-Schlüssel werden ausschließlich serverseitig verwaltet.</p>
+      <h4>12. Aktualisierung</h4>
+      <p>Wir passen diese Erklärung an, wenn sich Dienste oder Rechtslage ändern.</p>
+    </div>
+  </div>
+
+  <!-- MODAL: Impressum -->
+  <div id="modal_impressum" class="modal" aria-hidden="true">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;gap:8px;align-items:center">
+        <h3>Impressum</h3>
+        <button class="btn secondary" data-close>Schließen</button>
+      </div>
+      <p><b>Coffee-Car GmbH</b><br>
+      Theodor-Heuss-Allee 112<br>
+      60486 Frankfurt am Main<br>
+      Deutschland</p>
+      <p><b>Geschäftsführer:</b> Alkan Kurdes<br>
+      <b>E-Mail:</b> <a href="mailto:info@coffee-car.com">info@coffee-car.com</a><br>
+      <b>Telefon:</b> +49 711 219535609</p>
+      <p><b>Registereintrag:</b><br>
+      Registergericht: Amtsgericht Frankfurt am Main<br>
+      HRB 128817</p>
+      <h4>Haftungsausschluss</h4>
+      <p>Die Inhalte dieser Seite wurden mit größter Sorgfalt erstellt. Für die Richtigkeit, Vollständigkeit und Aktualität übernehmen wir keine Gewähr.</p>
+      <h4>Urheberrecht</h4>
+      <p>Eigene Inhalte und Werke unterliegen dem deutschen Urheberrecht. Beiträge Dritter sind als solche gekennzeichnet.</p>
+    </div>
+  </div>
 
 <script>
-/* ===== Konfiguration ===== */
-const GAS_URL = "https://script.google.com/macros/s/AKfycbxczqYTVN1GEcZ6JG-LDe0JsblYg1GtbVMxVPefP5xgXLv-gZ7dHSNarfqi5lljUL7b/exec";
+// ===== Konfiguration =====
+const GAS_ENDPOINT = "PASTE_YOUR_WEB_APP_URL_HERE"; // <— HIER Web-App-URL einsetzen
 
-/* ===== Hilfen ===== */
+// ===== Helper =====
 const $ = s => document.querySelector(s);
-function fmtCurrency(n){ return new Intl.NumberFormat('de-DE',{style:'currency',currency:'EUR'}).format(n); }
-function daysDiff(a,b){ return Math.round((Date.parse(b)-Date.parse(a))/86400000)+1; }
-function isoToday(){ const t=new Date(); t.setHours(0,0,0,0); return t.toISOString().slice(0,10); }
-
-/* ===== Datum-Setup (Ende = Start, nie vor Start) ===== */
-function setupDates(){
-  const start = $('#in_date_start');
-  const end   = $('#in_date_end');
-  const today = isoToday();
-
-  start.min = today; end.min = today;
-  if(!start.value) start.value = today;
-  if(!end.value)   end.value   = start.value;
-
-  function syncEnd(){
-    end.min = start.value || today;
-    if(!end.value || end.value < start.value){ end.value = start.value; }
-    updateBadges();
-  }
-  start.addEventListener('change', syncEnd);
-  end.addEventListener('change', ()=>{ if(end.value < start.value) syncEnd(); else updateBadges(); });
-
-  syncEnd();
+const qs = s => [...document.querySelectorAll(s)];
+const fmtKM = m => (m/1000).toFixed(1)+" km";
+const fmtMin = s => Math.round(s/60)+" min";
+const fmtMoney = n => new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR"}).format(n);
+const todayLocalISO = () => {
+  const tz = "Europe/Berlin";
+  const d = new Date();
+  const z = new Date(d.toLocaleString("en-CA",{timeZone:tz}));
+  return z.toISOString().slice(0,10);
+};
+function setSummary(){
+  $("#s-date").textContent = $("#date_start").value || "–";
+  $("#s-date-end").textContent = $("#date_end").value || "–";
+  const sd = $("#date_start").value, ed = $("#date_end").value;
+  let days = 0;
+  if(sd && ed){ days = (new Date(ed)-new Date(sd))/(1000*60*60*24)+1; }
+  $("#s-days").textContent = Math.max(0, Math.round(days||0));
+  $("#s-loc").textContent = $("#loc").value || "–";
+  $("#s-seg").textContent = $("#segment").value || "–";
 }
 
-/* ===== Badges aktualisieren ===== */
-function updateBadges(){
-  const s = $('#in_date_start').value;
-  const e = $('#in_date_end').value;
-  const d = (s && e) ? daysDiff(s,e) : 0;
-  $('#badgeDate').textContent = (s ? s : '–') + ' bis ' + (e ? e : '–') + ' (' + d + ' Tag/e)';
-  $('#badgeCity').textContent = $('#in_city').value || '–';
-  $('#badgeSeg').textContent  = $('#in_segment').value || '–';
-}
+// Datum-Logik
+const start = $("#date_start"), end = $("#date_end");
+start.min = todayLocalISO(); end.min = todayLocalISO();
+start.addEventListener("change", ()=>{ if(!end.value || end.value < start.value){ end.value = start.value; } end.min = start.value; setSummary(); recalc(); });
+end.addEventListener("change", ()=>{ if(end.value < start.value){ end.value = start.value; } setSummary(); recalc(); });
 
-/* ===== Demo-Kalkulator ===== */
-function calcPrice(){
-  const s = $('#in_date_start').value;
-  const e = $('#in_date_end').value;
-  const days = (s && e) ? daysDiff(s,e) : 1;
-  const base = 890; // Tagespreis Demo
-  return base * days;
-}
+// Eingaben triggern Preis
+["#hours_per_day","#guests","#segment"].forEach(sel=> $(sel).addEventListener("input", ()=>{ setSummary(); recalc(); }));
 
-/* ===== Verfügbarkeit prüfen ===== */
-$('#btnCheck').addEventListener('click', ()=>{
-  const s=$('#in_date_start').value, e=$('#in_date_end').value, city=$('#in_city').value.trim(), seg=$('#in_segment').value;
-  if(!s || !city || !seg){
-    $('#checkMsg').innerHTML = "Bitte Startdatum, Ort und Segment angeben.";
-    return;
-  }
-  // Demo: immer verfügbar + 10% Rabatt
-  const price = calcPrice();
-  $('#out_availability').textContent = "verfügbar";
-  $('#out_discount').textContent = "10% Rabatt";
-  $('#out_price').textContent = fmtCurrency(price);
-  $('#checkMsg').innerHTML = "✓ Termin <b>"+s+(e&&e!==s?(" bis "+e):"")+"</b> in <b>"+city+"</b> ist voraussichtlich verfügbar. <span class='ok'>10% Rabatt</span> bei schneller Bestätigung.";
-  updateBadges();
+// Addons (Chips)
+$("#addons").addEventListener("click", e=>{
+  const chip = e.target.closest(".chip"); if(!chip) return;
+  chip.classList.toggle("on"); recalc();
 });
 
-/* ===== Formular senden ===== */
-$('#offerForm').addEventListener('submit', async (ev)=>{
-  ev.preventDefault();
-  $('#errorBox').classList.add('hidden');
+// Autocomplete (Places via GAS)
+let locTimer = 0;
+$("#loc").addEventListener("input", ()=>{
+  setSummary();
+  const q = $("#loc").value.trim();
+  if(locTimer) clearTimeout(locTimer);
+  if(q.length < 3){ $("#loc_list").innerHTML=""; return; }
+  locTimer = setTimeout(async ()=>{
+    try{
+      const r = await fetch(`${GAS_ENDPOINT}?action=places&q=${encodeURIComponent(q)}`);
+      const data = await r.json();
+      const items = (data.predictions||[]).slice(0,5).map(p=>`<a href="#" data-text="${p.description.replace(/"/g,'&quot;')}">${p.description}</a>`).join(" · ");
+      $("#loc_list").innerHTML = items || "";
+    }catch(_){ $("#loc_list").innerHTML=""; }
+  }, 180);
+});
+$("#loc_list").addEventListener("click", e=>{
+  const a = e.target.closest("a"); if(!a) return;
+  e.preventDefault();
+  $("#loc").value = a.getAttribute("data-text");
+  $("#loc_list").innerHTML = "";
+  setSummary(); recalc();
+});
 
-  const payload = {
-    name: $('#name').value.trim(),
-    email: $('#email').value.trim(),
-    telefon: $('#telefon').value.trim(),
-    consent: $('#consent').checked,
-    termin_start: $('#in_date_start').value,
-    termin_ende: $('#in_date_end').value,
-    ort: $('#in_city').value.trim(),
-    segment: $('#in_segment').value,
-    wichtig: $('#out_priority').textContent,
-    verfuegbarkeit: $('#out_availability').textContent,
-    preis_display: $('#out_price').textContent,
-    hinweise: $('#notes').value.trim()
-  };
+// Verfügbarkeit prüfen
+$("#btn_check").addEventListener("click", async ()=>{
+  const sd = start.value, ed = end.value, loc = $("#loc").value, seg = $("#segment").value;
+  const status = $("#avail_status"); status.textContent = "";
+  if(!sd || !ed || !loc || !seg){ status.textContent="Bitte Start/Ende, Ort/PLZ und Segment angeben."; status.className="status warn"; return; }
+  if(sd < todayLocalISO()){ status.textContent="Startdatum darf nicht in der Vergangenheit liegen."; status.className="status err"; return; }
+  $("#s-availability").textContent = "Prüfe …";
 
-  if(!payload.name || !payload.email || !payload.ort){
-    return showError("Bitte Name, E-Mail und Ort ausfüllen.");
-  }
-  if(!payload.consent){
-    return showError("Bitte Einverständnis anhaken.");
-  }
-  if(new Date(payload.termin_start) < new Date(new Date().toDateString())){
-    return showError("Das Datum darf nicht in der Vergangenheit liegen.");
-  }
-
-  const btn = $('#btnSubmit'); btn.disabled = true;
   try{
-    const res = await fetch(GAS_URL, {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify(payload)
-    });
-    const json = await res.json().catch(()=>({ok:false,error:"Antwort nicht lesbar"}));
-    if(json && json.ok){
-      $('#successBox').classList.remove('hidden');
-      updateBadges();
-      setTimeout(()=>{ document.getElementById('successBox').scrollIntoView({behavior:'smooth'}); }, 80);
-    }else{
-      throw new Error(json && json.error ? json.error : "Unbekannter Fehler");
-    }
-  }catch(err){
-    showError("Versand fehlgeschlagen: "+String(err).replace(/^Error:\s*/,''));
-  }finally{
-    btn.disabled = false;
+    const r = await fetch(`${GAS_ENDPOINT}?action=distance&origin=${encodeURIComponent(loc)}`);
+    const data = await r.json();
+    $("#s-base").textContent = data.base?.name ?? "–";
+    $("#s-dist").textContent = data.distance_m ? fmtKM(data.distance_m) : "–";
+    $("#s-time").textContent = data.duration_s ? fmtMin(data.duration_s) : "–";
+    const available = data.duration_s && data.duration_s < 3*3600;
+    $("#s-availability").textContent = available ? "Verfügbar / kein Rabatt" : "Auf Anfrage";
+    status.textContent = available ? "Termin ist voraussichtlich frei." : "Termin prüfbar, wir melden uns.";
+    status.className = "status " + (available ? "ok" : "warn");
+    setSummary(); recalc();
+  }catch(_){
+    status.textContent = "Konnte Entfernung nicht berechnen. Bitte Adresse prüfen.";
+    status.className = "status err"; $("#s-availability").textContent = "unbekannt";
   }
 });
 
-function showError(t){ const b=$('#errorBox'); b.textContent=t; b.classList.remove('hidden'); }
+// Preis neu berechnen
+async function recalc(){
+  const payload = collect();
+  if(!payload.date_start || !payload.date_end || !payload.hours_per_day || !payload.guests) {
+    $("#price_big").textContent="–"; $("#price_note").textContent=""; $("#s-price").textContent="–"; return;
+  }
+  try{
+    const r = await fetch(GAS_ENDPOINT, {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({...payload, action:"price"})});
+    const data = await r.json();
+    if(!data?.ok) throw new Error("no ok");
+    $("#price_big").textContent = fmtMoney(data.price_gross);
+    $("#s-price").textContent = fmtMoney(data.price_gross);
+    $("#price_note").textContent = data.note || "";
+  }catch(_){
+    $("#price_big").textContent = "–";
+    $("#price_note").textContent = "Preis derzeit nicht verfügbar.";
+    $("#s-price").textContent = "–";
+  }
+}
 
-/* ===== Ort/Segment Badges live ===== */
-$('#in_city').addEventListener('input', updateBadges);
-$('#in_segment').addEventListener('change', updateBadges);
+function collect(){
+  const sd = $("#date_start").value, ed = $("#date_end").value;
+  const days = (sd && ed) ? Math.round(((new Date(ed)-new Date(sd))/(1000*60*60*24))+1) : 0;
+  const addons = {}; qs("#addons .chip.on").forEach(c=>{ addons[c.dataset.key]=true; });
+  return {
+    date_start: sd, date_end: ed, days,
+    hours_per_day: Number($("#hours_per_day").value||0),
+    guests: Number($("#guests").value||0),
+    loc: $("#loc").value, segment: $("#segment").value,
+    base: $("#s-base").textContent, dist_label: $("#s-dist").textContent,
+    addons
+  };
+}
 
-/* ===== Start ===== */
-window.addEventListener('DOMContentLoaded', ()=>{ setupDates(); updateBadges(); });
+// Lead senden
+$("#btn_send").addEventListener("click", async ()=>{
+  const p = collect();
+  const out = $("#send_status");
+  const required = ["date_start","date_end","loc","segment"]; const hasReq = required.every(k=>p[k]);
+  if(!$("#consent").checked || !hasReq || !$("#name").value || !$("#email").value){
+    out.textContent = "Bitte Pflichtfelder ausfüllen und Einwilligung setzen."; out.className="status warn"; return;
+  }
+  try{
+    const res = await fetch(GAS_ENDPOINT, {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({
+      action:"lead",
+      ...p,
+      name: $("#name").value, email: $("#email").value, phone: $("#phone").value, notes: $("#notes").value
+    })});
+    const data = await res.json();
+    if(data?.ok){ out.textContent="✅ Danke! Wir melden uns kurzfristig mit einem Angebot."; out.className="status ok"; }
+    else { out.textContent="Versand fehlgeschlagen – bitte erneut versuchen."; out.className="status err"; }
+  }catch(_){ out.textContent="Server nicht erreichbar – bitte später erneut versuchen."; out.className="status err"; }
+});
+
+// Modal Handling
+function openModal(id){ const m = document.getElementById(id); if(!m) return; m.classList.add("on"); m.setAttribute("aria-hidden","false"); }
+function closeModal(el){ const m = el.closest(".modal"); if(!m) return; m.classList.remove("on"); m.setAttribute("aria-hidden","true"); }
+document.addEventListener("click", e=>{
+  const t = e.target;
+  if(t.matches("[data-modal]")){ e.preventDefault(); const id="modal_"+t.getAttribute("data-modal"); openModal(id); }
+  if(t.matches(".modal")){ closeModal(t); }
+  if(t.matches(".modal .card")){ e.stopPropagation(); }
+  if(t.matches("[data-close]")){ closeModal(t); }
+});
+
+// Init
+setSummary();
 </script>
 </body>
 </html>
