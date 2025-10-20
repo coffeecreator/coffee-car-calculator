@@ -1,469 +1,297 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="de">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>Coffee‑Car Buchungs‑Wizard · Final</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Coffee-Car · Professionelles Coffee-Catering</title>
+<meta name="color-scheme" content="light">
 <style>
-  :root{ --mint:#8BC4B5; --mint-strong:#5DB6A1; --ink:#1A1F2B; --ink-soft:#3B4150; --bg:#FAFBFC; --card:#FFFFFF; --line:#E6E8EB; --muted:#6B7280; --accent:#0F766E; --radius:16px; --shadow:0 6px 24px rgba(0,0,0,.06);}
-  *{box-sizing:border-box} body{margin:0; font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; background:var(--bg); color:var(--ink)}
-  .wrap{max-width:1200px; margin:auto; padding:20px}
-  .header{display:flex; justify-content:space-between; align-items:center; gap:14px; margin-bottom:12px}
-  .logo svg{height:64px}
-  .steps{display:flex; gap:8px; align-items:center}
-  .dot{width:11px; height:11px; border-radius:50%; background:#d7e7e3; border:1px solid #cfe7df}
-  .dot.active{background:var(--mint); border-color:var(--mint-strong)}
-  h1{margin:0; font-size:clamp(20px,3.8vw,34px)}
-  .grid2{display:grid; grid-template-columns:1fr; gap:18px}
-  .card{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:18px; box-shadow:var(--shadow)}
-  .row{display:grid; gap:12px; grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
-  label{font-weight:700; margin:6px 0}
-  input,select,button,textarea{width:100%; padding:12px; border-radius:12px; border:1px solid var(--line); background:#fff; color:var(--ink)}
-  input:focus,select:focus,textarea:focus{outline:2px solid var(--mint); outline-offset:1px}
-  .btn{cursor:pointer; font-weight:900; background:linear-gradient(90deg,var(--mint),var(--mint-strong)); border:none; color:#083B35}
-  .btn-ghost{background:transparent; border:1px solid var(--line); color:var(--ink)}
-  .toolbar{display:flex; gap:10px; justify-content:flex-end; margin-top:12px}
-  .muted{color:var(--muted)}
-  .hidden{display:none !important}
-  .info{display:flex; gap:10px; align-items:flex-start; padding:10px; border:1px dashed var(--line); border-radius:12px; background:#F6FAF9; margin-top:8px}
-  .ok{color:#0C3F37} .warn{color:#8B5E00}
-  .gallery{display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:12px}
-  .ref-card{border:1px solid var(--line); border-radius:14px; background:#fff; padding:12px; display:flex; gap:12px; align-items:center}
-  .ref-card img,.ref-card svg{width:120px; height:auto}
-  .choice,.segment{cursor:pointer; transition:transform .05s ease}
-  .choice.active,.segment.active{outline:2px solid var(--mint); border-radius:14px}
-  .badge{display:inline-flex; gap:8px; align-items:center; padding:6px 10px; border-radius:999px; background:#EEF7F5; border:1px solid var(--line); color:#0C3F37; margin-right:6px; margin-bottom:6px}
-  .pricebox{display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:999px; background:#F3F7F6; border:1px dashed var(--line); color:var(--accent); margin-top:10px}
-  .addon{display:flex; justify-content:space-between; align-items:center; gap:12px}
+  :root{
+    --mint:#6bd1b3; --mint-2:#39b99a;
+    --ink:#0f2722; --ink-70:#40524f;
+    --bg:#f7faf9; --card:#ffffff; --muted:#6b7c78;
+    --ok:#16794b; --danger:#b02a37;
+    --shadow:0 10px 30px rgba(0,0,0,.06);
+    --radius:16px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial}
+  a{color:var(--mint-2);text-decoration:none}
+  .wrap{max-width:1000px;margin:0 auto;padding:16px}
+  header{display:flex;gap:12px;align-items:center}
+  .logo{width:56px;height:56px;display:grid;place-items:center;border-radius:50%;background:#fff;box-shadow:var(--shadow)}
+  .logo svg{width:40px;height:40px}
+  h1{font-size:22px;margin:0}
+  small.sub{display:block;color:var(--muted)}
+  .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;margin:14px 0}
+  .hero{padding:0;overflow:hidden}
+  .hero-img{width:100%;height:260px;background:linear-gradient(120deg,#eaf6f2,#f8fbfa)}
+  .hero-caption{display:flex;gap:10px;flex-wrap:wrap;padding:12px}
+  .badge{display:inline-flex;align-items:center;gap:8px;background:#eef7f5;border:1px solid #d8efe9;color:var(--ink);padding:8px 12px;border-radius:999px;font-weight:600}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media (max-width:760px){.grid{grid-template-columns:1fr}}
+  label{font-weight:600;font-size:14px;margin-bottom:6px;display:block}
+  input,select,textarea{width:100%;padding:12px 14px;border-radius:12px;border:1px solid #d9e7e3;background:#fff;outline:none}
+  input:focus,select:focus,textarea:focus{border-color:var(--mint-2);box-shadow:0 0 0 3px rgba(57,185,154,.18)}
+  .row{display:flex;flex-wrap:wrap;gap:10px}
+  .pill{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;border:1px solid #d9e7e3;background:#fff;color:var(--ink-70);font-weight:600}
+  .btn{appearance:none;border:0;border-radius:12px;padding:12px 16px;font-weight:700;background:var(--mint-2);color:#fff;cursor:pointer}
+  .btn:disabled{opacity:.6;cursor:not-allowed}
+  .btn-outline{background:#fff;border:1px solid #cfe7e1;color:#1d5a4b}
+  .hint{color:var(--muted)}
+  .ok{color:var(--ok)} .error{color:var(--danger)}
+  .hidden{display:none!important}
+  .section-title{font-size:20px;margin:0 0 6px}
+  .success{background:#e7f7ef;border:1px solid #cceede;border-radius:12px;padding:12px}
 </style>
-
-<link rel="icon" type="image/svg+xml" href="favicon.svg"/>
-<link rel="alternate icon" href="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20120%20120%22%20width%3D%2256%22%20aria-label%3D%22CC%20monogram%22%3E%0A%20%20%3Cdefs%3E%3ClinearGradient%20id%3D%22gc%22%20x1%3D%220%22%20x2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%238BC4B5%22/%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%235DB6A1%22/%3E%3C/linearGradient%3E%3C/defs%3E%0A%20%20%3Ccircle%20cx%3D%2260%22%20cy%3D%2260%22%20r%3D%2256%22%20fill%3D%22%23ffffff%22%20stroke%3D%22%23E6E8EB%22/%3E%0A%20%20%3Cpath%20d%3D%22M36%2060a24%2024%200%201%201%200%200%22%20fill%3D%22none%22%20stroke%3D%22url%28%23gc%29%22%20stroke-width%3D%2210%22%20stroke-linecap%3D%22round%22/%3E%0A%20%20%3Cpath%20d%3D%22M76%2060a24%2024%200%201%201%200%200%22%20fill%3D%22none%22%20stroke%3D%22%230F766E%22%20stroke-width%3D%2210%22%20stroke-linecap%3D%22round%22/%3E%0A%3C/svg%3E"/>
 </head>
 <body>
 <div class="wrap">
-  <div class="header">
-    <div class="logo"><img id="brandLogo" alt="Coffee‑Car Logo" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20360%20100%22%20width%3D%22180%22%20aria-label%3D%22Coffee%E2%80%91Car%22%3E%0A%20%20%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20x2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%238BC4B5%22/%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%235DB6A1%22/%3E%3C/linearGradient%3E%3C/defs%3E%0A%20%20%3Cg%20fill%3D%22none%22%20stroke%3D%22url%28%23g%29%22%20stroke-width%3D%2210%22%20stroke-linecap%3D%22round%22%3E%0A%20%20%20%20%3Cpath%20d%3D%22M20%2C70%20C50%2C20%20110%2C20%20140%2C70%22/%3E%0A%20%20%20%20%3Cpath%20d%3D%22M80%2C70%20C110%2C20%20170%2C20%20200%2C70%22/%3E%0A%20%20%3C/g%3E%0A%20%20%3Ccircle%20cx%3D%2285%22%20cy%3D%2278%22%20r%3D%2210%22%20fill%3D%22%230F766E%22/%3E%0A%20%20%3Ccircle%20cx%3D%22205%22%20cy%3D%2278%22%20r%3D%2210%22%20fill%3D%22%230F766E%22/%3E%0A%20%20%3Ctext%20x%3D%22220%22%20y%3D%2245%22%20font-size%3D%2228%22%20font-family%3D%22Inter%2Csystem-ui%2CSegoe%20UI%2CRoboto%2CArial%22%20fill%3D%22%231A1F2B%22%20font-weight%3D%22800%22%3ECoffee%E2%80%91Car%3C/text%3E%0A%20%20%3Ctext%20x%3D%22220%22%20y%3D%2272%22%20font-size%3D%2214%22%20font-family%3D%22Inter%2Csystem-ui%2CSegoe%20UI%2CRoboto%2CArial%22%20fill%3D%22%233B4150%22%3EProfessional%20Coffee%20Catering%3C/text%3E%0A%3C/svg%3E" /><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 100" width="180" aria-label="Coffee‑Car">
-  <defs><linearGradient id="g" x1="0" x2="1"><stop offset="0" stop-color="#8BC4B5"/><stop offset="1" stop-color="#5DB6A1"/></linearGradient></defs>
-  <g fill="none" stroke="url(#g)" stroke-width="10" stroke-linecap="round">
-    <path d="M20,70 C50,20 110,20 140,70"/>
-    <path d="M80,70 C110,20 170,20 200,70"/>
-  </g>
-  <circle cx="85" cy="78" r="10" fill="#0F766E"/>
-  <circle cx="205" cy="78" r="10" fill="#0F766E"/>
-  <text x="220" y="45" font-size="28" font-family="Inter,system-ui,Segoe UI,Roboto,Arial" fill="#1A1F2B" font-weight="800">Coffee‑Car</text>
-  <text x="220" y="72" font-size="14" font-family="Inter,system-ui,Segoe UI,Roboto,Arial" fill="#3B4150">Professional Coffee Catering</text>
-</svg></div>
-    
-<div style="display:flex; gap:8px; align-items:center">
-  <button class="btn-ghost" id="logoPrimaryBtn" title="Primärlogo">Primär</button>
-  <button class="btn-ghost" id="logoMonoBtn" title="Monochrom">Mono</button>
-  <button class="btn-ghost" id="logoCompactBtn" title="Kompakt">Kompakt</button>
-</div>
-<div class="steps"><div class="dot" id="s1"></div><div class="dot" id="s2"></div><div class="dot" id="s3"></div><div class="dot" id="s4"></div><div class="dot" id="s5"></div><div class="dot" id="s6"></div></div>
-  </div>
-
-  
-<div id="hero" style="border-radius:16px; overflow:hidden; margin:8px 0 16px; position:relative; min-height:160px; background:#eaf5f2">
-  <picture>
-  <source type="image/webp" srcset="hero-1920.webp 1920w, hero-1280.webp 1280w, hero-960.webp 960w, hero-640.webp 640w" sizes="100vw">
-  <source type="image/jpeg" srcset="hero-1920.jpg 1920w, hero-1280.jpg 1280w, hero-960.jpg 960w, hero-640.jpg 640w" sizes="100vw">
-  <img id="heroImg" src="hero-1280.jpg" loading="lazy" decoding="async" alt="Coffee-Car Bild" style="width:100%; height:260px; object-fit:cover; display:block"/>
-</picture>
-  <div style="position:absolute; inset:auto 12px 12px 12px; background:rgba(255,255,255,.86); border:1px solid var(--line); padding:10px 12px; border-radius:12px; display:flex; gap:10px; align-items:center; box-shadow:var(--shadow)">
-    <strong>Professionelles Coffee‑Catering</strong><span class="muted">Espresso · Cappuccino · Flat White · u. v. m.</span>
-    <div style="margin-left:auto; display:flex; gap:8px"></div>
-  </div>
-</div>
-<div id="summary" class="muted" style="margin:6px 0 12px"></div>
-
-  
-<div id="imgAdmin" style="display:none" class="card" style="margin:10px 0; display:none">
-  <h3 style="margin-top:0">Bilder verwalten</h3>
-  <p class="muted">Füge hier die direkten Bild‑URLs ein (JPG/PNG/WebP). Gespeichert in deinem Browser (localStorage). Leere Felder nutzen Platzhalter.</p>
-  <div class="row">
-    <div><label>Hero – Siebträgermaschine</label><input id="img_machine" placeholder="https://.../machine.jpg"/></div>
-    <div><label>Latte Art</label><input id="img_latte" placeholder="https://.../latte.jpg"/></div>
-    <div><label>Espresso</label><input id="img_espresso" placeholder="https://.../espresso.jpg"/></div>
-    <div><label>Espresso Macchiato</label><input id="img_macchiato" placeholder="https://.../macchiato.jpg"/></div>
-    <div><label>Flat White</label><input id="img_flatwhite" placeholder="https://.../flatwhite.jpg"/></div>
-  </div>
-  <div class="toolbar"><button class="btn" id="saveImages">Speichern</button><button class="btn-ghost" id="hideImages">Schließen</button></div>
-</div>
-<div class="grid2">
-    <!-- STEP 1 -->
-    <div class="card" id="step1">
-      <h2>1) Wann &amp; Wo findet das Event statt?</h2>
-      <div class="row">
-        <div><label>Datum (Start)</label><input id="date_start" type="date"/></div>
-        <div><label>Datum (Ende)</label><input id="date_end" type="date" placeholder="optional"/></div>
-        <div><label>Ort / PLZ</label><input id="location" maxlength="140" placeholder="z. B. 60313 Frankfurt"/></div>
-      </div>
-      <div class="toolbar"><button class="btn" id="checkAvail">Verfügbarkeit prüfen</button></div>
-      <div class="info hidden" id="availInfo"></div>
+  <header>
+    <div class="logo" aria-label="Coffee-Car">
+      <svg viewBox="0 0 64 64" fill="none">
+        <path d="M8 36c6-14 42-14 48 0" stroke="#39b99a" stroke-width="6" stroke-linecap="round"/>
+        <circle cx="14" cy="42" r="4" fill="#39b99a"/><circle cx="50" cy="42" r="4" fill="#39b99a"/>
+      </svg>
     </div>
-
-    <!-- STEP 2 -->
-    <div class="card hidden" id="step2">
-      <h2>2) Wer fragt an?</h2>
-      <div class="gallery" id="segmentGrid">
-        <div class="ref-card segment" data-value="Privat"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 140" width="320">
-  <rect rx="16" ry="16" x="5" y="5" width="210" height="130" fill="#f4f7f6" stroke="#e6e8eb"/>
-  <g transform="translate(60,25)">
-    <ellipse cx="50" cy="18" rx="50" ry="16" fill="#d2e7e2"/>
-    <ellipse cx="50" cy="18" rx="46" ry="12" fill="#ffffff"/>
-    <rect x="4" y="18" width="92" height="52" rx="10" fill="#ffffff"/>
-    <rect x="4" y="70" width="92" height="30" rx="10" fill="#e8f2ef"/>
-    <path d="M12 40 C30 20, 70 20, 88 40 C70 60, 30 60, 12 40 Z" fill="#f2c9a6"/>
-    <circle cx="95" cy="44" r="10" fill="none" stroke="#9acabc" stroke-width="6"/>
-  </g>
-</svg><div><h4>Privat</h4><p class="muted">Hochzeiten, Geburtstage, Familienfeiern</p></div></div>
-        <div class="ref-card segment" data-value="Gewerblich"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 140" width="320">
-  <defs><linearGradient id="a" x1="0" x2="1"><stop offset="0" stop-color="#c48a5a"/><stop offset="1" stop-color="#8b5b2e"/></linearGradient></defs>
-  <rect rx="16" ry="16" x="5" y="5" width="210" height="130" fill="#f4f7f6" stroke="#e6e8eb"/>
-  <g transform="translate(30,25)">
-    <rect x="0" y="0" width="160" height="18" rx="9" fill="#1A1F2B"/>
-    <rect x="10" y="28" width="60" height="8" rx="4" fill="#9aa3b2"/>
-    <rect x="90" y="28" width="20" height="8" rx="4" fill="#9aa3b2"/>
-    <path d="M78,18 v34" stroke="#1A1F2B" stroke-width="6" stroke-linecap="round"/>
-    <rect x="62" y="52" width="32" height="22" rx="5" fill="#ddd"/>
-    <rect x="58" y="76" width="40" height="22" rx="8" fill="url(#a)"/>
-    <rect x="52" y="98" width="52" height="8" rx="4" fill="#6b4b2a"/>
-  </g>
-</svg><div><h4>Gewerblich</h4><p class="muted">Messen, Eröffnungen, Firmenfeiern</p></div></div>
-        <div class="ref-card segment" data-value="Agenturen / Wiederverkäufer"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 140" width="320">
-  <defs><linearGradient id="a" x1="0" x2="1"><stop offset="0" stop-color="#c48a5a"/><stop offset="1" stop-color="#8b5b2e"/></linearGradient></defs>
-  <rect rx="16" ry="16" x="5" y="5" width="210" height="130" fill="#f4f7f6" stroke="#e6e8eb"/>
-  <g transform="translate(30,25)">
-    <rect x="0" y="0" width="160" height="18" rx="9" fill="#1A1F2B"/>
-    <rect x="10" y="28" width="60" height="8" rx="4" fill="#9aa3b2"/>
-    <rect x="90" y="28" width="20" height="8" rx="4" fill="#9aa3b2"/>
-    <path d="M78,18 v34" stroke="#1A1F2B" stroke-width="6" stroke-linecap="round"/>
-    <rect x="62" y="52" width="32" height="22" rx="5" fill="#ddd"/>
-    <rect x="58" y="76" width="40" height="22" rx="8" fill="url(#a)"/>
-    <rect x="52" y="98" width="52" height="8" rx="4" fill="#6b4b2a"/>
-  </g>
-</svg><div><h4>Agenturen / Wiederverkäufer</h4><p class="muted">White-Label & Promotion</p></div></div>
-        <div class="ref-card segment" data-value="Behörden / Öffentliche Einrichtungen"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 140" width="320">
-  <rect rx="16" ry="16" x="5" y="5" width="210" height="130" fill="#f4f7f6" stroke="#e6e8eb"/>
-  <g transform="translate(60,25)">
-    <ellipse cx="50" cy="18" rx="50" ry="16" fill="#d2e7e2"/>
-    <ellipse cx="50" cy="18" rx="46" ry="12" fill="#ffffff"/>
-    <rect x="4" y="18" width="92" height="52" rx="10" fill="#ffffff"/>
-    <rect x="4" y="70" width="92" height="30" rx="10" fill="#e8f2ef"/>
-    <path d="M12 40 C30 20, 70 20, 88 40 C70 60, 30 60, 12 40 Z" fill="#f2c9a6"/>
-    <circle cx="95" cy="44" r="10" fill="none" stroke="#9acabc" stroke-width="6"/>
-  </g>
-</svg><div><h4>Behörden / Öffentliche Einrichtungen</h4><p class="muted">Schulen, Ämter, Stadtverwaltung</p></div></div>
-      </div>
-      <div class="toolbar"><button class="btn-ghost" id="back2">Zurück</button><button class="btn" id="next2">Weiter</button></div>
+    <div>
+      <h1>Coffee-Car</h1>
+      <small class="sub">Professionelles Coffee-Catering</small>
     </div>
+  </header>
 
-    <!-- STEP 3 -->
-    <div class="card hidden" id="step3">
-      <h2>3) Was ist Ihnen besonders wichtig?</h2>
-      <div class="gallery" id="priorityGrid">
-        <div class="ref-card choice" data-value="Preis &amp; Wirtschaftlichkeit">Preis &amp; Wirtschaftlichkeit</div>
-        <div class="ref-card choice" data-value="Einfach &amp; Zuverlässig">Einfach &amp; Zuverlässig</div>
-        <div class="ref-card choice" data-value="Qualität &amp; Auftritt">Qualität &amp; Auftritt</div>
-        <div class="ref-card choice" data-value="Luxus &amp; Individualisierung">Luxus &amp; Individualisierung</div>
-        <div class="ref-card choice" data-value="Nachhaltigkeit">Nachhaltigkeit</div>
-        <div class="ref-card choice" data-value="Faire Löhne">Faire Löhne</div>
-        <div class="ref-card choice" data-value="Große Auswahl an Milchalternativen">Große Auswahl an Milchalternativen</div>
-        <div class="ref-card choice" data-value="Barista mit Latte‑Art‑Skill">Barista mit Latte‑Art‑Skill</div>
-      </div>
-      <div class="toolbar"><button class="btn-ghost" id="back3">Zurück</button><button class="btn" id="next3">Weiter</button></div>
+  <section class="card hero" aria-labelledby="heroTitle">
+    <div class="hero-img" id="heroImg" role="img" aria-label="Cappuccino mit Latte-Art"></div>
+    <div class="hero-caption">
+      <span class="badge">Professionelles Coffee-Catering</span>
+      <span class="badge">Espresso · Cappuccino · Flat White · u. v. m.</span>
     </div>
+  </section>
 
-    <!-- STEP 4 -->
-    <div class="card hidden" id="step4">
-      <h2>4) Passende Referenzen</h2>
-      <p class="muted">Aus über 3.000 Coffee‑Events empfehlen wir vergleichbare Setups.</p>
-      <div class="row">
-        <div><label>Kategorie</label><select id="refCategory"></select></div>
-        <div><label>Unterkategorie</label><select id="refSub"></select></div>
-      </div>
-      <div id="refGrid" class="gallery" style="margin-top:12px"></div>
-      <div class="toolbar"><button class="btn-ghost" id="back4">Zurück</button><button class="btn" id="next4">Weiter</button></div>
+  <!-- Zusammenfassung -->
+  <section class="card">
+    <div class="row" style="gap:8px">
+      <span class="pill">Termin: <strong id="badgeDate">– bis – (0 Tag/e)</strong></span>
+      <span class="pill">Ort: <strong id="badgeCity">–</strong></span>
+      <span class="pill">Segment: <strong id="badgeSeg">–</strong></span>
+      <span class="pill">Wichtig: <strong id="out_priority">Qualität &amp; Auftritt</strong></span>
+      <span class="pill">Verfügbarkeit: <strong id="out_availability">unbekannt</strong> / <span id="out_discount">kein Rabatt</span></span>
+      <span class="pill">Preis: <strong id="out_price">–</strong></span>
     </div>
+  </section>
 
-    <!-- STEP 5 -->
-    <div class="card hidden" id="step5">
-      <h2>5) Preis &amp; Optionen</h2>
-      <div class="row">
-        <div><label>Gästezahl</label><input id="guests" type="number" min="1" value="80"/></div>
-        <div><label>Ausschankbeginn</label><input id="start_time" type="time" value="09:00"/></div>
-        <div><label>Ausschankende</label><input id="end_time" type="time" value="13:00"/></div>
+  <!-- 1) Termin & Ort -->
+  <section class="card" aria-labelledby="s1">
+    <h2 id="s1" class="section-title">1) Wann &amp; Wo findet das Event statt?</h2>
+    <div class="grid">
+      <div>
+        <label for="in_date_start">Datum (Start)</label>
+        <input id="in_date_start" type="date" required>
+      </div>
+      <div>
+        <label for="in_date_end">Datum (Ende)</label>
+        <input id="in_date_end" type="date" required>
+        <small class="hint">= Startdatum (automatisch), bei mehrtägigen Events anpassen.</small>
+      </div>
+      <div>
+        <label for="in_city">Ort / PLZ</label>
+        <input id="in_city" type="text"
+               inputmode="text"
+               autocomplete="address-level2 postal-code"
+               placeholder="z. B. 71549 Auenwald"
+               minlength="2" maxlength="120"
+               pattern="[A-Za-zÄÖÜäöüß0-9 .,\-]{2,120}" required>
+      </div>
+      <div>
+        <label for="in_segment">Segment</label>
+        <select id="in_segment" required>
+          <option value="" disabled selected>Bitte wählen …</option>
+          <option>Privat</option>
+          <option>Gewerbe</option>
+          <option>Agentur</option>
+          <option>Kindergarten/Schule</option>
+          <option>Behörde/Öffentliche Einrichtung</option>
+        </select>
+      </div>
+    </div>
+    <div class="row" style="margin-top:12px">
+      <button id="btnCheck" class="btn" type="button">Verfügbarkeit prüfen</button>
+    </div>
+    <small id="checkMsg" class="hint"></small>
+  </section>
+
+  <!-- 6) Angebot sichern -->
+  <section class="card" aria-labelledby="s6">
+    <h2 id="s6" class="section-title">6) Angebot sichern</h2>
+    <p>Wir senden Ihnen das Angebot per E-Mail zu und reservieren den Termin vorläufig.</p>
+
+    <form id="offerForm" novalidate>
+      <div class="grid">
         <div>
-          <label>Becher / Tassen</label>
-          <select id="cupType">
-            <option>Einwegbecher (kompostierbar)</option>
-            <option>Porzellantassen</option>
-            <option>Kunde stellt Tassen</option>
-            <option>Branding‑Becher</option>
-          </select>
+          <label for="name">Name</label>
+          <input id="name" autocomplete="name" placeholder="Ihr Name" required>
+        </div>
+        <div>
+          <label for="email">E-Mail</label>
+          <input id="email" type="email" autocomplete="email" placeholder="ihr@mail.de" required>
+        </div>
+        <div>
+          <label for="telefon">Telefon</label>
+          <input id="telefon" type="tel" autocomplete="tel" placeholder="+49…">
+        </div>
+        <div>
+          <label for="notes">Hinweise (optional)</label>
+          <input id="notes" placeholder="z. B. Aufbauzeit, Wunschgetränke, Logo-Becher …">
         </div>
       </div>
-      <div class="gallery" style="margin-top:10px">
-        <label class="ref-card addon"><div><h4>Waffeln</h4><p class="muted">Frische Waffeln am Stiel (~80 Stk/h)</p></div><input id="waffles_on" type="checkbox"/></label>
-        <label class="ref-card addon"><div><h4>Frozen Cappuccino</h4><p class="muted">Sommer‑Favorit</p></div><input id="frozencap_on" type="checkbox"/></label>
-        <label class="ref-card addon"><div><h4>Softeis</h4><p class="muted">Perfekt für Affogato</p></div><input id="softice_on" type="checkbox"/></label>
-        <label class="ref-card addon"><div><h4>Milchschaumdrucker</h4><p class="muted">Logo/Foto auf Milchschaum</p></div><input id="milkschaum_on" type="checkbox"/></label>
-      </div>
-      <div class="toolbar"><button class="btn-ghost" id="back5">Zurück</button><button class="btn" id="calc">Preis berechnen</button></div>
-      <div id="priceOut" class="pricebox hidden"></div>
-    </div>
 
-    <!-- STEP 6 -->
-    <div class="card hidden" id="step6">
-      <h2>6) Angebot sichern</h2>
-      <p class="muted">Wir senden Ihnen das Angebot per E‑Mail zu und reservieren den Termin vorläufig.</p>
+      <div class="row" style="margin:12px 0">
+        <label class="row" style="gap:8px;align-items:center">
+          <input id="consent" type="checkbox" required>
+          <span>Ich stimme der Verarbeitung meiner Angaben zum Zweck der Angebotserstellung zu.</span>
+        </label>
+      </div>
+
       <div class="row">
-        <div><label>Name</label><input id="lead_name" placeholder="Max Mustermann"/></div>
-        <div><label>E‑Mail</label><input id="lead_email" type="email" placeholder="max@firma.de"/></div>
-        <div><label>Telefon</label><input id="lead_phone" placeholder="+49 ..."/></div>
+        <button type="submit" class="btn" id="btnSubmit">Angebot sichern</button>
       </div>
-      <label style="display:flex;gap:8px;align-items:center;margin-top:8px"><input id="consent" type="checkbox"/> Ich stimme der Verarbeitung meiner Angaben zum Zweck der Angebotserstellung zu.</label>
-      <div class="toolbar"><button class="btn-ghost" id="back6">Zurück</button><button class="btn" id="sendLead">Angebot sichern</button></div>
-      <div class="info hidden" id="leadMsg"></div>
-    </div>
-  </div>
 
-  <div style="margin-top:16px">
-    <h3>Hinweis</h3>
-    <p class="muted">Wochentags‑Zuschläge sind in der Kalkulation bereits berücksichtigt. Zusätzlich gelten tagesabhängige Rabatte und Mehrtages‑Vorteile.</p>
-  </div>
+      <div id="successBox" class="success hidden" style="margin-top:12px">
+        ✅ Danke! Wir melden uns kurzfristig mit einem Angebot.
+      </div>
+      <div id="errorBox" class="error hidden" style="margin-top:12px"></div>
+
+      <small class="hint">Hinweis: Versand &amp; Protokollierung über Google Apps Script (in deinem Google-Konto). Widerruf jederzeit per E-Mail möglich.</small>
+    </form>
+  </section>
 </div>
 
 <script>
-const state = { date_start:"", date_end:"", location:"", available:false, availabilityDiscount:0, location_lat:null, location_lng:null,
-  segment:"", priorities:[], refCategory:"", refSub:"", guests:80, start_time:"09:00", end_time:"13:00",
-  addons:{waffles:false,frozencap:false,softice:false,milkschaum:false}, route:null, price:null };
-function $(id){ return document.getElementById(id); }
-function todayISO(){ const t=new Date(); const y=t.getFullYear(), m=String(t.getMonth()+1).padStart(2,'0'), d=String(t.getDate()).padStart(2,'0'); return `${y}-${m}-${d}`; }
-function isPastDate(iso){ if(!iso) return true; const t=new Date(todayISO()); const d=new Date(iso); return d<t; }
-function daysBetween(a,b){ const s=new Date(a); const e=b?new Date(b):new Date(a); if(isNaN(s)) return 0; if(isNaN(e)) return 1;
-  const ms=(Date.UTC(e.getFullYear(),e.getMonth(),e.getDate())-Date.UTC(s.getFullYear(),s.getMonth(),s.getDate())); return Math.floor(ms/86400000)+1; }
-function formatEUR(v){ return new Intl.NumberFormat('de-DE',{ style:'currency', currency:'EUR'}).format(v); }
-function setActive(step){ [1,2,3,4,5,6].forEach(n => $('s'+n).classList.toggle('active', n<=step)); }
-function showStep(n){ ['step1','step2','step3','step4','step5','step6'].forEach((id,i)=>$(id).classList.toggle('hidden',(i+1)!==n)); setActive(n); updateSummary(); }
-function updateSummary(){
-  const d1=state.date_start||'–', d2=state.date_end||state.date_start||'–', days=daysBetween(state.date_start,state.date_end);
-  const seg=state.segment||'–', pr=(state.priorities.length?state.priorities.join(', '):'–');
-  const disc=state.availabilityDiscount>0? Math.round(state.availabilityDiscount*100)+'% Rabatt':'kein Rabatt';
-  $('summary').innerHTML = `<span class="badge">Termin: <strong>${d1}</strong> bis <strong>${d2}</strong> (${days} Tag/e)</span>
-  <span class="badge">Ort: <strong>${state.location||'–'}</strong></span>
-  <span class="badge">Segment: <strong>${seg}</strong></span>
-  <span class="badge">Wichtig: <strong>${pr}</strong></span>
-  <span class="badge">Verfügbarkeit: <strong>${state.available?'verfügbar':'unbekannt'}</strong> / <strong>${disc}</strong></span>`;
-}
+/* ===== Konfiguration ===== */
+const GAS_URL = "https://script.google.com/macros/s/AKfycbxczqYTVN1GEcZ6JG-LDe0JsblYg1GtbVMxVPefP5xgXLv-gZ7dHSNarfqi5lljUL7b/exec";
 
-// Step 1
-$('date_start').min=todayISO(); $('date_end').min=todayISO(); $('date_start').valueAsDate=new Date();
-$('checkAvail').addEventListener('click', ()=>{
-  state.date_start=$('date_start').value; state.date_end=$('date_end').value; state.location=$('location').value.trim();
-  if(!state.date_start || !state.location) return show('Bitte Datum und Ort/PLZ angeben.','warn');
-  if(state.location.length<3) return show('Bitte mindestens 3 Zeichen für Ort/PLZ eingeben.','warn');
-  if(isPastDate(state.date_start)) return show('Das Startdatum darf nicht in der Vergangenheit liegen.','warn');
-  if(state.date_end && state.date_end<state.date_start) return show('Das Enddatum darf nicht vor dem Startdatum liegen.','warn');
-  $('availInfo').className='info'; $('availInfo').classList.remove('hidden'); $('availInfo').textContent='⏳ Wir prüfen die Verfügbarkeit …';
-  let finished=false; const watchdog=setTimeout(()=>{ if(!finished){ finalize(null); finished=true; } }, 3500);
-  try{
-    const hasGoogle=!!(window.google && google.maps);
-    if(!hasGoogle){ done(); } else if(google.maps.Geocoder){
-      const geocoder=new google.maps.Geocoder();
-      geocoder.geocode({ address: state.location, componentRestrictions:{country:'DE'} }, (res,status)=>{ if(finished) return; done(); });
-    } else { done(); }
-  }catch(e){ done(); }
-  function done(){ if(finished) return; finished=true; clearTimeout(watchdog); finalize(null); }
-  function finalize(route){
-    const r=Math.random(); const disc=r<0.2?0.15:(r<0.65?0.10:0);
-    state.available=true; state.availabilityDiscount=disc; $('availInfo').className='info ok';
-    $('availInfo').innerHTML = disc>0? `✅ Termin verfügbar. Frühbucher‑Vorteil: <strong>${Math.round(disc*100)}%</strong>.` : '✅ Termin verfügbar.';
-    updateSummary(); showStep(2);
+/* ===== Hilfen ===== */
+const $ = s => document.querySelector(s);
+function fmtCurrency(n){ return new Intl.NumberFormat('de-DE',{style:'currency',currency:'EUR'}).format(n); }
+function daysDiff(a,b){ return Math.round((Date.parse(b)-Date.parse(a))/86400000)+1; }
+function isoToday(){ const t=new Date(); t.setHours(0,0,0,0); return t.toISOString().slice(0,10); }
+
+/* ===== Datum-Setup (Ende = Start, nie vor Start) ===== */
+function setupDates(){
+  const start = $('#in_date_start');
+  const end   = $('#in_date_end');
+  const today = isoToday();
+
+  start.min = today; end.min = today;
+  if(!start.value) start.value = today;
+  if(!end.value)   end.value   = start.value;
+
+  function syncEnd(){
+    end.min = start.value || today;
+    if(!end.value || end.value < start.value){ end.value = start.value; }
+    updateBadges();
   }
-});
-function show(msg,kind){ const box=$('availInfo'); box.classList.remove('hidden'); box.className='info '+(kind||''); box.textContent=msg; }
+  start.addEventListener('change', syncEnd);
+  end.addEventListener('change', ()=>{ if(end.value < start.value) syncEnd(); else updateBadges(); });
 
-// Step 2
-$('back2').addEventListener('click',()=>showStep(1));
-document.querySelectorAll('#segmentGrid .segment').forEach(el=>el.addEventListener('click',()=>{ document.querySelectorAll('#segmentGrid .segment').forEach(x=>x.classList.remove('active')); el.classList.add('active'); state.segment=el.dataset.value; updateSummary(); }));
-$('next2').addEventListener('click',()=>{ if(!state.segment) return alert('Bitte Segment wählen.');
-  const cats=Object.keys(REF_MAP); const sel=$('refCategory'); sel.innerHTML=''; cats.forEach(c=>{ const o=document.createElement('option'); o.value=c; o.textContent=c; sel.appendChild(o); });
-  sel.value = cats.includes(state.segment)? state.segment : cats[0]; fillSub(); showStep(3);
-});
-
-// Step 3
-$('back3').addEventListener('click',()=>showStep(2));
-document.querySelectorAll('#priorityGrid .choice').forEach(card=>card.addEventListener('click',()=>{ const v=card.dataset.value; const i=state.priorities.indexOf(v); if(i>=0){ state.priorities.splice(i,1); card.classList.remove('active'); } else { state.priorities.push(v); card.classList.add('active'); } updateSummary(); }));
-$('next3').addEventListener('click',()=>{ if(!state.priorities.length) return alert('Bitte mindestens eine Priorität wählen.'); showStep(4); });
-
-// Step 4
-const REF_MAP = {
-  "Privat": {"Hochzeit": {"desc":"Romantische Hochzeiten","img":"latte"}, "Geburtstag": {"desc":"Runde Geburtstage","img":"espresso"}},
-  "Gewerblich": {"Messe": {"desc":"Messe‑Catering","img":"espresso"}, "Eröffnung": {"desc":"Geschäftseröffnungen","img":"latte"}},
-  "Agenturen / Wiederverkäufer": {"Promotion": {"desc":"White‑Label & Promotion","img":"espresso"}},
-  "Allgemein": {"Coffee‑Car Flotte": {"desc":"Unsere Fahrzeuge","img":"latte"}}
-};
-$('refCategory').addEventListener('change',fillSub); $('refSub').addEventListener('change',renderRefs);
-function fillSub(){ const cat=$('refCategory').value; const subs=Object.keys(REF_MAP[cat]||{}); const sel=$('refSub'); sel.innerHTML=''; subs.forEach(s=>{ const o=document.createElement('option'); o.value=s; o.textContent=s; sel.appendChild(o); }); renderRefs(); }
-function renderRefs(){ const cat=$('refCategory').value, sub=$('refSub').value; state.refCategory=cat; state.refSub=sub; const grid=$('refGrid'); grid.innerHTML='';
-  if(!cat||!sub||!REF_MAP[cat]||!REF_MAP[cat][sub]) return; const item=REF_MAP[cat][sub];
-  const card=document.createElement('div'); card.className='ref-card'; card.innerHTML=(item.img==='espresso'?`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 140" width="320">
-  <defs><linearGradient id="a" x1="0" x2="1"><stop offset="0" stop-color="#c48a5a"/><stop offset="1" stop-color="#8b5b2e"/></linearGradient></defs>
-  <rect rx="16" ry="16" x="5" y="5" width="210" height="130" fill="#f4f7f6" stroke="#e6e8eb"/>
-  <g transform="translate(30,25)">
-    <rect x="0" y="0" width="160" height="18" rx="9" fill="#1A1F2B"/>
-    <rect x="10" y="28" width="60" height="8" rx="4" fill="#9aa3b2"/>
-    <rect x="90" y="28" width="20" height="8" rx="4" fill="#9aa3b2"/>
-    <path d="M78,18 v34" stroke="#1A1F2B" stroke-width="6" stroke-linecap="round"/>
-    <rect x="62" y="52" width="32" height="22" rx="5" fill="#ddd"/>
-    <rect x="58" y="76" width="40" height="22" rx="8" fill="url(#a)"/>
-    <rect x="52" y="98" width="52" height="8" rx="4" fill="#6b4b2a"/>
-  </g>
-</svg>`:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 140" width="320">
-  <rect rx="16" ry="16" x="5" y="5" width="210" height="130" fill="#f4f7f6" stroke="#e6e8eb"/>
-  <g transform="translate(60,25)">
-    <ellipse cx="50" cy="18" rx="50" ry="16" fill="#d2e7e2"/>
-    <ellipse cx="50" cy="18" rx="46" ry="12" fill="#ffffff"/>
-    <rect x="4" y="18" width="92" height="52" rx="10" fill="#ffffff"/>
-    <rect x="4" y="70" width="92" height="30" rx="10" fill="#e8f2ef"/>
-    <path d="M12 40 C30 20, 70 20, 88 40 C70 60, 30 60, 12 40 Z" fill="#f2c9a6"/>
-    <circle cx="95" cy="44" r="10" fill="none" stroke="#9acabc" stroke-width="6"/>
-  </g>
-</svg>`)+`<div><h4>${cat} → ${sub}</h4><p class='muted'>${item.desc||''}</p></div>`; grid.appendChild(card);
+  syncEnd();
 }
-$('back4').addEventListener('click',()=>showStep(3)); $('next4').addEventListener('click',()=>showStep(5));
 
-// Step 5
-$('back5').addEventListener('click',()=>showStep(4));
-$('calc').addEventListener('click',()=>{
-  state.guests=parseInt($('guests').value||'0',10); state.start_time=$('start_time').value; state.end_time=$('end_time').value;
-  state.addons.waffles=$('waffles_on').checked; state.addons.frozencap=$('frozencap_on').checked; state.addons.softice=$('softice_on').checked; state.addons.milkschaum=$('milkschaum_on').checked;
-  const [h1,m1]=state.start_time.split(':').map(Number); const [h2,m2]=state.end_time.split(':').map(Number); const hrs=Math.max(1,(h2*60+m2-(h1*60+m1))/60); const days=daysBetween(state.date_start,state.date_end);
-
-  function weekday(d){ const wd=new Date(d).getDay(); return wd; } // 0=So … 6=Sa
-  const wd=weekday(state.date_start);
-  let base = (wd===0?950:(wd===6?890:790));
-  if(hrs>4) base += (hrs-4)*120;
-  if(state.guests>50) base += (state.guests-50)*3.5;
-  if(state.addons.waffles) base += 220;
-  if(state.addons.frozencap) base += 180;
-  if(state.addons.softice) base += 260;
-  if(state.addons.milkschaum) base += 150;
-  let helper = 0; if(state.guests>=120) helper = Math.max(4, hrs)*29;
-
-  let dayDisc=0; if(days===2) dayDisc=0.20; if(days>=3) dayDisc=0.25;
-  const availDisc = state.availabilityDiscount;
-
-  const DEPOTS=[{name:'Frankfurt',lat:50.1109,lng:8.6821},{name:'Stuttgart',lat:48.7758,lng:9.1829},{name:'München',lat:48.1351,lng:11.5820},{name:'Singen',lat:47.7649,lng:8.8421},{name:'Düsseldorf',lat:51.2277,lng:6.7735}];
-  function toRad(x){return x*Math.PI/180;} function hav(a,b){const R=6371; const dLat=toRad(b.lat-a.lat), dLng=toRad(b.lng-a.lng), lat1=toRad(a.lat), lat2=toRad(b.lat); const h=Math.sin(dLat/2)**2+Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLng/2)**2; return 2*R*Math.asin(Math.sqrt(h)); }
-  let travel=0; if(state.location_lat && state.location_lng){ const p={lat:state.location_lat,lng:state.location_lng}; let best=null; DEPOTS.forEach(d=>{const km=hav(p,d); if(!best||km<best.km) best={depot:d,km};}); const bill=Math.max(0,best.km-30); travel=bill*0.80; }
-
-  let subtotal = base + helper + travel; subtotal = subtotal*(1-availDisc)*(1-dayDisc);
-  const NET = Math.round(subtotal); const GROSS = Math.round(NET*1.19);
-  state.price={net:NET,gross:GROSS,base,helper,travel,hrs,days,availDisc,dayDisc};
-  const out=$('priceOut'); out.classList.remove('hidden');
-  out.innerHTML = `<div><strong>Preisvorschlag (Brutto):</strong> ${formatEUR(GROSS)}</div>
-    <div class="muted">Netto: ${formatEUR(NET)} • Basis: ${formatEUR(base)} • Helfer: ${formatEUR(helper)} • Anfahrt: ${formatEUR(travel)} • Rabatte: Verfügbarkeit −${Math.round(availDisc*100)}% • Mehrtägig −${Math.round(dayDisc*100)}% • Dauer: ${hrs} h</div>`;
-  showStep(6);
-});
-
-// Step 6
-$('back6').addEventListener('click',()=>showStep(5));
-(function(){ const send=$('sendLead'); const c=$('consent'); function u(){ send.disabled=!c.checked; } c.addEventListener('change',u); u(); })();
-$('sendLead').addEventListener('click', async ()=>{
-  const name=$('lead_name').value.trim(), email=$('lead_email').value.trim(), phone=$('lead_phone').value.trim();
-  if(!name||!email) return alert('Bitte Name und E‑Mail angeben.');
-  const params=new URLSearchParams({mode:'lead',name,email,phone, date_start:state.date_start,date_end:state.date_end,location:state.location, segment:state.segment,priority:(state.priorities||[]).join(', '), ref_cat:state.refCategory,ref_sub:state.refSub, guests:state.guests,start_time:state.start_time,end_time:state.end_time, price_net: state.price? state.price.net:'', price_gross: state.price? state.price.gross:''});
-  const box=$('leadMsg'); box.classList.remove('hidden'); box.className='info'; box.textContent='⏳ Sende Anfrage …';
-  try{ const r=await fetch('https://script.google.com/macros/s/AKfycbw4-wgD6hQFoPHGtbew27ysmR8q0NokxGfV_ym2PKgMi5bt415b-PrtG12tKbUXwCpxeg/exec?'+params.toString()); const j=await r.json(); if(j.ok){ box.className='info ok'; box.innerHTML='✅ Danke! Wir melden uns kurzfristig mit einem Angebot.'; } else { box.className='info warn'; box.textContent='⚠️ Konnte nicht gesendet werden: '+(j.error||'Unbekannt'); } }catch(e){ box.className='info warn'; box.textContent='⚠️ Netzwerkfehler: '+e.message; }
-});
-
-// Init + optional Places
-showStep(1);
-function initAutocomplete(){
-  try{ if(!(window.google && google.maps && google.maps.places && google.maps.places.Autocomplete)) return;
-    const input=$('location'); const ac=new google.maps.places.Autocomplete(input, { fields:['formatted_address','geometry'], componentRestrictions:{country:['de']}, types:['geocode'] });
-    ac.addListener('place_changed', ()=>{ const p=ac.getPlace(); if(p && p.geometry){ state.location = p.formatted_address||input.value.trim(); state.location_lat=p.geometry.location.lat(); state.location_lng=p.geometry.location.lng(); } });
-  }catch(e){}
+/* ===== Badges aktualisieren ===== */
+function updateBadges(){
+  const s = $('#in_date_start').value;
+  const e = $('#in_date_end').value;
+  const d = (s && e) ? daysDiff(s,e) : 0;
+  $('#badgeDate').textContent = (s ? s : '–') + ' bis ' + (e ? e : '–') + ' (' + d + ' Tag/e)';
+  $('#badgeCity').textContent = $('#in_city').value || '–';
+  $('#badgeSeg').textContent  = $('#in_segment').value || '–';
 }
-document.addEventListener('DOMContentLoaded',initAutocomplete); window.addEventListener('load',initAutocomplete);
-</script>
-<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBIRGZPccaGFYnieQTR8gbAox2KDL0pgoQ&libraries=places"></script>
 
-<script>
-(function(){ 
-  const el = document.getElementById('brandLogo');
-  const primary = "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20360%20100%22%20width%3D%22180%22%20aria-label%3D%22Coffee%E2%80%91Car%22%3E%0A%20%20%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20x2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%238BC4B5%22/%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%235DB6A1%22/%3E%3C/linearGradient%3E%3C/defs%3E%0A%20%20%3Cg%20fill%3D%22none%22%20stroke%3D%22url%28%23g%29%22%20stroke-width%3D%2210%22%20stroke-linecap%3D%22round%22%3E%0A%20%20%20%20%3Cpath%20d%3D%22M20%2C70%20C50%2C20%20110%2C20%20140%2C70%22/%3E%0A%20%20%20%20%3Cpath%20d%3D%22M80%2C70%20C110%2C20%20170%2C20%20200%2C70%22/%3E%0A%20%20%3C/g%3E%0A%20%20%3Ccircle%20cx%3D%2285%22%20cy%3D%2278%22%20r%3D%2210%22%20fill%3D%22%230F766E%22/%3E%0A%20%20%3Ccircle%20cx%3D%22205%22%20cy%3D%2278%22%20r%3D%2210%22%20fill%3D%22%230F766E%22/%3E%0A%20%20%3Ctext%20x%3D%22220%22%20y%3D%2245%22%20font-size%3D%2228%22%20font-family%3D%22Inter%2Csystem-ui%2CSegoe%20UI%2CRoboto%2CArial%22%20fill%3D%22%231A1F2B%22%20font-weight%3D%22800%22%3ECoffee%E2%80%91Car%3C/text%3E%0A%20%20%3Ctext%20x%3D%22220%22%20y%3D%2272%22%20font-size%3D%2214%22%20font-family%3D%22Inter%2Csystem-ui%2CSegoe%20UI%2CRoboto%2CArial%22%20fill%3D%22%233B4150%22%3EProfessional%20Coffee%20Catering%3C/text%3E%0A%3C/svg%3E";
-  const mono = "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20360%20100%22%20width%3D%22180%22%20aria-label%3D%22Coffee%E2%80%91Car%20mono%22%3E%0A%20%20%3Cg%20fill%3D%22none%22%20stroke%3D%22%230F766E%22%20stroke-width%3D%2210%22%20stroke-linecap%3D%22round%22%3E%0A%20%20%20%20%3Cpath%20d%3D%22M20%2C70%20C50%2C20%20110%2C20%20140%2C70%22/%3E%0A%20%20%20%20%3Cpath%20d%3D%22M80%2C70%20C110%2C20%20170%2C20%20200%2C70%22/%3E%0A%20%20%3C/g%3E%0A%20%20%3Ccircle%20cx%3D%2285%22%20cy%3D%2278%22%20r%3D%2210%22%20fill%3D%22%230F766E%22/%3E%0A%20%20%3Ccircle%20cx%3D%22205%22%20cy%3D%2278%22%20r%3D%2210%22%20fill%3D%22%230F766E%22/%3E%0A%20%20%3Ctext%20x%3D%22220%22%20y%3D%2245%22%20font-size%3D%2228%22%20font-family%3D%22Inter%2Csystem-ui%2CSegoe%20UI%2CRoboto%2CArial%22%20fill%3D%22%231A1F2B%22%20font-weight%3D%22800%22%3ECoffee%E2%80%91Car%3C/text%3E%0A%20%20%3Ctext%20x%3D%22220%22%20y%3D%2272%22%20font-size%3D%2214%22%20font-family%3D%22Inter%2Csystem-ui%2CSegoe%20UI%2CRoboto%2CArial%22%20fill%3D%22%233B4150%22%3EProfessional%20Coffee%20Catering%3C/text%3E%0A%3C/svg%3E";
-  const compact = "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20120%20120%22%20width%3D%2256%22%20aria-label%3D%22CC%20monogram%22%3E%0A%20%20%3Cdefs%3E%3ClinearGradient%20id%3D%22gc%22%20x1%3D%220%22%20x2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%238BC4B5%22/%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%235DB6A1%22/%3E%3C/linearGradient%3E%3C/defs%3E%0A%20%20%3Ccircle%20cx%3D%2260%22%20cy%3D%2260%22%20r%3D%2256%22%20fill%3D%22%23ffffff%22%20stroke%3D%22%23E6E8EB%22/%3E%0A%20%20%3Cpath%20d%3D%22M36%2060a24%2024%200%201%201%200%200%22%20fill%3D%22none%22%20stroke%3D%22url%28%23gc%29%22%20stroke-width%3D%2210%22%20stroke-linecap%3D%22round%22/%3E%0A%20%20%3Cpath%20d%3D%22M76%2060a24%2024%200%201%201%200%200%22%20fill%3D%22none%22%20stroke%3D%22%230F766E%22%20stroke-width%3D%2210%22%20stroke-linecap%3D%22round%22/%3E%0A%3C/svg%3E";
-  const b1=document.getElementById('logoPrimaryBtn'), b2=document.getElementById('logoMonoBtn'), b3=document.getElementById('logoCompactBtn');
-  if(b1) b1.addEventListener('click', ()=>{ el.src = primary; });
-  if(b2) b2.addEventListener('click', ()=>{ el.src = mono; });
-  if(b3) b3.addEventListener('click', ()=>{ el.src = compact; });
-})();
-</script>
+/* ===== Demo-Kalkulator ===== */
+function calcPrice(){
+  const s = $('#in_date_start').value;
+  const e = $('#in_date_end').value;
+  const days = (s && e) ? daysDiff(s,e) : 1;
+  const base = 890; // Tagespreis Demo
+  return base * days;
+}
 
+/* ===== Verfügbarkeit prüfen ===== */
+$('#btnCheck').addEventListener('click', ()=>{
+  const s=$('#in_date_start').value, e=$('#in_date_end').value, city=$('#in_city').value.trim(), seg=$('#in_segment').value;
+  if(!s || !city || !seg){
+    $('#checkMsg').innerHTML = "Bitte Startdatum, Ort und Segment angeben.";
+    return;
+  }
+  // Demo: immer verfügbar + 10% Rabatt
+  const price = calcPrice();
+  $('#out_availability').textContent = "verfügbar";
+  $('#out_discount').textContent = "10% Rabatt";
+  $('#out_price').textContent = fmtCurrency(price);
+  $('#checkMsg').innerHTML = "✓ Termin <b>"+s+(e&&e!==s?(" bis "+e):"")+"</b> in <b>"+city+"</b> ist voraussichtlich verfügbar. <span class='ok'>10% Rabatt</span> bei schneller Bestätigung.";
+  updateBadges();
+});
 
-<script>
-(function(){
-  // Defaults (subtle placeholders)
-  const placeholders = {
-    machine: 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 400"><defs><linearGradient id="g" x1="0" x2="1"><stop offset="0" stop-color="#e3f2ee"/><stop offset="1" stop-color="#cfeae3"/></linearGradient></defs><rect width="1200" height="400" fill="url(#g)"/><text x="50" y="320" font-family="Inter,Arial" font-size="56" fill="#0F766E">Coffee‑Car · Siebträgermaschine</text></svg>'),
-    latte: 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 160"><rect rx="16" ry="16" x="6" y="6" width="228" height="148" fill="#eaf5f2"/><text x="24" y="92" font-family="Inter,Arial" font-size="16" fill="#0F766E">Latte Art</text></svg>'),
-    espresso: 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 160"><rect rx="16" ry="16" x="6" y="6" width="228" height="148" fill="#edf2f7"/><text x="24" y="92" font-family="Inter,Arial" font-size="16" fill="#1A1F2B">Espresso</text></svg>'),
-    macchiato: 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 160"><rect rx="16" ry="16" x="6" y="6" width="228" height="148" fill="#f6efe7"/><text x="24" y="92" font-family="Inter,Arial" font-size="16" fill="#8B5E00">Espresso Macchiato</text></svg>'),
-    flatwhite: 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 160"><rect rx="16" ry="16" x="6" y="6" width="228" height="148" fill="#eef7ff"/><text x="24" y="92" font-family="Inter,Arial" font-size="16" fill="#3B4150">Flat White</text></svg>'),
+/* ===== Formular senden ===== */
+$('#offerForm').addEventListener('submit', async (ev)=>{
+  ev.preventDefault();
+  $('#errorBox').classList.add('hidden');
+
+  const payload = {
+    name: $('#name').value.trim(),
+    email: $('#email').value.trim(),
+    telefon: $('#telefon').value.trim(),
+    consent: $('#consent').checked,
+    termin_start: $('#in_date_start').value,
+    termin_ende: $('#in_date_end').value,
+    ort: $('#in_city').value.trim(),
+    segment: $('#in_segment').value,
+    wichtig: $('#out_priority').textContent,
+    verfuegbarkeit: $('#out_availability').textContent,
+    preis_display: $('#out_price').textContent,
+    hinweise: $('#notes').value.trim()
   };
 
-  const key = 'cc_images_v1';
-  function loadConfig(){
-    try{ const j = JSON.parse(localStorage.getItem(key)||'{}'); return j; }catch(e){ return {}; }
+  if(!payload.name || !payload.email || !payload.ort){
+    return showError("Bitte Name, E-Mail und Ort ausfüllen.");
   }
-  function saveConfig(cfg){ localStorage.setItem(key, JSON.stringify(cfg||{})); }
-  function getSrc(name){ const cfg = loadConfig(); return (cfg && cfg[name]) ? cfg[name] : placeholders[name]; }
-
-  // hydrate hero
-  const hero = document.getElementById('heroImg'); if(hero) hero.src = getSrc('machine');
-  // hydrate placeholders in cards
-  document.querySelectorAll('img.ph-latte').forEach(img => img.src = getSrc('latte'));
-  document.querySelectorAll('img.ph-espresso').forEach(img => img.src = getSrc('espresso'));
-
-  // admin panel toggling
-  const btn = document.getElementById('btnImages');
-  const panel = document.getElementById('imgAdmin');
-  function openPanel(){
-    const cfg = loadConfig();
-    ['machine','latte','espresso','macchiato','flatwhite'].forEach(n => {
-      const el = document.getElementById('img_'+n);
-      if(el) el.value = cfg[n] || '';
-    });
-    panel.style.display = 'block';
-    window.scrollTo({ top: panel.offsetTop - 8, behavior: 'smooth' });
+  if(!payload.consent){
+    return showError("Bitte Einverständnis anhaken.");
   }
-  function closePanel(){ panel.style.display = 'none'; }
+  if(new Date(payload.termin_start) < new Date(new Date().toDateString())){
+    return showError("Das Datum darf nicht in der Vergangenheit liegen.");
+  }
 
-  if(btn) btn.addEventListener('click', openPanel);
-  const btnHide = document.getElementById('hideImages');
-  if(btnHide) btnHide.addEventListener('click', closePanel);
-
-  const btnSave = document.getElementById('saveImages');
-  if(btnSave) btnSave.addEventListener('click', ()=>{
-    const cfg = {};
-    ['machine','latte','espresso','macchiato','flatwhite'].forEach(n => {
-      const v = (document.getElementById('img_'+n).value||'').trim();
-      if(v) cfg[n] = v;
+  const btn = $('#btnSubmit'); btn.disabled = true;
+  try{
+    const res = await fetch(GAS_URL, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
     });
-    saveConfig(cfg);
-    // refresh display
-    hero.src = getSrc('machine');
-    document.querySelectorAll('img.ph-latte').forEach(img => img.src = getSrc('latte'));
-    document.querySelectorAll('img.ph-espresso').forEach(img => img.src = getSrc('espresso'));
-    closePanel();
-  });
-})();
+    const json = await res.json().catch(()=>({ok:false,error:"Antwort nicht lesbar"}));
+    if(json && json.ok){
+      $('#successBox').classList.remove('hidden');
+      updateBadges();
+      setTimeout(()=>{ document.getElementById('successBox').scrollIntoView({behavior:'smooth'}); }, 80);
+    }else{
+      throw new Error(json && json.error ? json.error : "Unbekannter Fehler");
+    }
+  }catch(err){
+    showError("Versand fehlgeschlagen: "+String(err).replace(/^Error:\s*/,''));
+  }finally{
+    btn.disabled = false;
+  }
+});
+
+function showError(t){ const b=$('#errorBox'); b.textContent=t; b.classList.remove('hidden'); }
+
+/* ===== Ort/Segment Badges live ===== */
+$('#in_city').addEventListener('input', updateBadges);
+$('#in_segment').addEventListener('change', updateBadges);
+
+/* ===== Start ===== */
+window.addEventListener('DOMContentLoaded', ()=>{ setupDates(); updateBadges(); });
 </script>
-
 </body>
 </html>
