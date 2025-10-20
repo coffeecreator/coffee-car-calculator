@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="80" viewBox="0 0 320 80">
+  <defs><filter id="s"><feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity="0.15"/></filter></defs>
+  <rect width="320" height="80" rx="14" fill="#fff"/>
+  <g transform="translate(16,14)" filter="url(#s)">
+    <circle cx="26" cy="26" r="24" fill="#222"/>
+    <path d="M12 28 h28 a6 6 0 0 1 0 12 h-28 a6 6 0 0 1 0 -12z" fill="#8BC4B5"/>
+    <circle cx="18" cy="46" r="6" fill="#fff"/>
+    <circle cx="34" cy="46" r="6" fill="#fff"/>
+  </g>
+  <g transform="translate(86,24)">
+    <text x="0" y="18" font-family="Inter,Arial" font-size="22" font-weight="700" fill="#222">Coffee-Car</text>
+    <text x="0" y="40" font-family="Inter,Arial" font-size="13" fill="#6b7280" letter-spacing="0.5">Professionelles Coffee-Catering</text>
+  </g>
+</svg>
